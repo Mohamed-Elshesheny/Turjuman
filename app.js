@@ -5,7 +5,7 @@ const userRouter = require("./Routes/userRoute");
 const translateRouter = require("./Routes/translateRoute");
 const AppError = require("./utils/AppError");
 const bodyParser = require("body-parser");
-const globalErrorHandler = require("./Middleware/errorMiddleware");
+const errorController = require("./Controllers/errorController");
 
 const app = express();
 
@@ -34,6 +34,6 @@ app.use("*", (req, res, next) => {
   next(new AppError(`Can't Find this URL ${req.originalUrl}`, 400));
 });
 
-app.use(globalErrorHandler);
+app.use(errorController);
 
 module.exports = app;

@@ -67,8 +67,8 @@ exports.checkTranslationLimit = catchAsync(async (req, res, next) => {
   next();
 });
 
-exports.translateAndSave = catchAsync(async (req, res, next) => {
-  const { text, fromLang, toLang, isFavorite = false } = req.body;
+exports.translateText = catchAsync(async (req, res, next) => {
+  const { text, fromLang, toLang } = req.body;
 
   // Validate inputs
   if (!text || !fromLang || !toLang) {
@@ -78,8 +78,18 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   // Use translate-google to get the translation
   const result = await translate(text, { from: fromLang, to: toLang });
 
-  // Check if the translation already exists in the database
+  // Attach the translation result to the request object
+  req.translationResult = result;
+
+  next();
+});
+
+exports.saveTranslation = catchAsync(async (req, res, next) => {
+  const { text, fromLang, toLang, isFavorite = false } = req.body;
   const userId = req.user.id;
+  const result = req.translationResult;
+
+  // Check if the translation already exists in the database
   const existingTranslation = await savedtransModel.findOne({
     text,
     fromLang,
@@ -99,7 +109,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     });
   }
 
-  // Save the new translation to the databas
+  // Save the new translation to the database
   const savedTrans = await savedtransModel.create({
     text,
     fromLang,
