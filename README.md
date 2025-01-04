@@ -34,4 +34,97 @@
 
 ---
 
+## **Setup Instructions**
+
+1. **Clone the repository**:
+   ```sh
+   git clone https://github.com/yourusername/turjuman.git
+   cd turjuman
+   ```
+
+2. **Install dependencies**:
+   ```sh
+   npm install
+   ```
+
+3. **Set up environment variables**:
+   Create a `.env` file in the root directory and add the following variables:
+   ```sh
+   DB_URL=mongodb://localhost:27017/turjuman
+   JWT_SECRET=your_jwt_secret
+   JWT_EXPIRES_IN=1h
+   PORT=8001
+   NODE_ENV=development
+   ```
+
+4. **Start the application**:
+   ```sh
+   npm start
+   ```
+
+---
+
+## **Usage Examples**
+
+### **Signup**
+```sh
+POST /api/v1/users/signup
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "passwordConfirm": "password123"
+}
+```
+
+### **Login**
+```sh
+POST /api/v1/users/login
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+```
+
+### **Translate and Save**
+```sh
+POST /api/v1/translate-and-save
+Headers: { Authorization: "Bearer <token>" }
+{
+  "text": "Hello",
+  "fromLang": "en",
+  "toLang": "es"
+}
+```
+
+### **Get User Translations**
+```sh
+GET /api/v1/translates
+Headers: { Authorization: "Bearer <token>" }
+```
+
+---
+
+## **API Endpoint Details**
+
+### **User Routes**
+- `POST /api/v1/users/signup`: User signup
+- `POST /api/v1/users/login`: User login
+- `GET /api/v1/users/me`: Get current user details
+- `DELETE /api/v1/users/deleteMe`: Deactivate current user
+- `PUT /api/v1/users/UpdateUserInfo/:id`: Update user information
+- `PUT /api/v1/users/ChangePassword/:id`: Change user password
+
+### **Translation Routes**
+- `POST /api/v1/translate-and-save`: Translate text and save
+- `GET /api/v1/translates`: Get user translations
+- `GET /api/v1/favorites/translates`: Get favorite translations
+- `GET /api/v1/favorites-order`: Get favorite translations in order
+- `GET /api/v1/all-translates`: Get all translations
+- `DELETE /api/v1/translates/:id`: Delete translation by ID
+- `GET /api/v1/translations-History-stats`: Get translation history stats
+- `GET /api/v1/translats/search`: Search and filter translations
+
+---
+
 Built with ❤️ by Turjuman Team.
