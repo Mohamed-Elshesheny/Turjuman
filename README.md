@@ -32,7 +32,7 @@
 
 - **Backend**: Node.js with Express.js
 - **Database**: MongoDB (Mongoose ODM)
-- **Authentication**: JSON Web Token (JWT)-based secure authentication
+- **Authentication**: JSON Web Token (JWT) based secure authentication
 - **Translation API**: [`translate-google`](https://www.npmjs.com/package/translate-google) npm package
 
 ---
@@ -126,10 +126,9 @@ Headers: { Authorization: "Bearer <token>" }
 - `GET /api/v1/all-translates`: Get all translations
 - `DELETE /api/v1/translates/:id`: Delete translation by ID
 - `GET /api/v1/translations-History-stats`: Get translation history stats
-- `GET /api/v1/translats/search`: Search and filter translations
+- `GET /api/v1/translates/search`: Search and filter translations
 
 ---
 
 Built with ❤️ by Turjuman Team.
 ```
-
