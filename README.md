@@ -1,12 +1,15 @@
-# **Turjuman - Translation Application**
 
-**Turjuman** is a dynamic and user-friendly translation application that provides powerful tools for text translation, saving, and management. Designed to cater to both free-tier and premium users, Turjuman empowers users to handle their translations efficiently and with ease.
+
+```markdown
+# **Turjuman - Translation Application** 🌐
+
+**Turjuman** is a dynamic and user-friendly translation application that provides powerful tools for text translation, saving, and management. Designed to cater to both free-tier and premium users, Turjuman offers a seamless experience for all.
 
 ---
 
-## **Features**
+## **Features** ✨
 
-### **Core Features**
+### **Core Features** 🛠️
 
 - **Dynamic Translation**: Translate single words or entire sentences between multiple languages using the powerful `translate-google` API.
 - **Save Translations**: Save translations securely to your account for future reference.
@@ -16,7 +19,7 @@
   - Premium-tier users enjoy a generous limit of **100 translations per day**.
 - **Translation History**: Retrieve all previously saved translations with detailed metadata, including the source and target languages.
 
-### **Upcoming Features**
+### **Upcoming Features** 🚀
 
 - **Bulk Translation Support**: Translate and save multiple sentences or paragraphs at once.
 - **Export Options**: Allow users to download their translations in CSV or JSON format.
@@ -25,7 +28,7 @@
 
 ---
 
-## **Tech Stack**
+## **Tech Stack** 🛠️
 
 - **Backend**: Node.js with Express.js
 - **Database**: MongoDB (Mongoose ODM)
@@ -34,7 +37,7 @@
 
 ---
 
-## **Setup Instructions**
+## **Setup Instructions** ⚙️
 
 1. **Clone the repository**:
    ```sh
@@ -64,9 +67,9 @@
 
 ---
 
-## **Usage Examples**
+## **Usage Examples** 📋
 
-### **Signup**
+### **Signup** 📝
 ```sh
 POST /api/v1/users/signup
 {
@@ -77,7 +80,7 @@ POST /api/v1/users/signup
 }
 ```
 
-### **Login**
+### **Login** 🔑
 ```sh
 POST /api/v1/users/login
 {
@@ -86,7 +89,7 @@ POST /api/v1/users/login
 }
 ```
 
-### **Translate and Save**
+### **Translate and Save** 🌍
 ```sh
 POST /api/v1/translate-and-save
 Headers: { Authorization: "Bearer <token>" }
@@ -97,7 +100,7 @@ Headers: { Authorization: "Bearer <token>" }
 }
 ```
 
-### **Get User Translations**
+### **Get User Translations** 📂
 ```sh
 GET /api/v1/translates
 Headers: { Authorization: "Bearer <token>" }
@@ -105,9 +108,9 @@ Headers: { Authorization: "Bearer <token>" }
 
 ---
 
-## **API Endpoint Details**
+## **API Endpoint Details** 🌐
 
-### **User Routes**
+### **User Routes** 👤
 - `POST /api/v1/users/signup`: User signup
 - `POST /api/v1/users/login`: User login
 - `GET /api/v1/users/me`: Get current user details
@@ -115,7 +118,7 @@ Headers: { Authorization: "Bearer <token>" }
 - `PUT /api/v1/users/UpdateUserInfo/:id`: Update user information
 - `PUT /api/v1/users/ChangePassword/:id`: Change user password
 
-### **Translation Routes**
+### **Translation Routes** 🌏
 - `POST /api/v1/translate-and-save`: Translate text and save
 - `GET /api/v1/translates`: Get user translations
 - `GET /api/v1/favorites/translates`: Get favorite translations
