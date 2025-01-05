@@ -1,6 +1,6 @@
 
 
-```markdown
+
 # **Turjuman - Translation Application** 🌐
 
 **Turjuman** is a dynamic and user-friendly translation application that provides powerful tools for text translation, saving, and management. Designed to cater to both free-tier and premium users, Turjuman offers a seamless experience for all.
@@ -131,4 +131,4 @@ Headers: { Authorization: "Bearer <token>" }
 ---
 
 Built with ❤️ by Turjuman Team.
-```
+
