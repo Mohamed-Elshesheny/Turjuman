@@ -1,6 +1,6 @@
 # **Turjuman - Translation Application**
 
-**Turjuman** is a dynamic and user-friendly translation application that provides powerful tools for text translation, saving, and management. Designed to cater to both free-tier and premium users, Turjuman empowers users to handle their translations efficiently and with ease..
+**Turjuman** is a dynamic and user-friendly translation application that provides powerful tools for text translation, saving, and management. Designed to cater to both free-tier and premium users, Turjuman empowers users to handle their translations efficiently and with ease.
 
 ---
 
