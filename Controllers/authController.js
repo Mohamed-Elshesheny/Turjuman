@@ -158,7 +158,7 @@ exports.updateUserPassword = catchAsync(async (req, res, next) => {
     return next(new AppError("Passwords do not match. Please try again.", 400));
   }
 
-  const hashedPassword = await bcrypt.hash(password, 12);
+  const hashedPassword = crypto.hash(password, 12);
 
   const user = await User.findByIdAndUpdate(
     req.params.id,
