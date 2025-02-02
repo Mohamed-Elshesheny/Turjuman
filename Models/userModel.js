@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
@@ -51,6 +52,8 @@ const userSchema = new mongoose.Schema(
     isPremium: { type: Boolean, default: false },
     isActive: { type: Boolean, default: false },
     passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpired: Date,
   },
   { timestamps: true }
 );
@@ -61,7 +64,7 @@ const userSchema = new mongoose.Schema(
 userSchema.pre("save", async function (next) {
   // This function works only when password is modified
   if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 12);
+  this.password = bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
   next();
 });
@@ -85,6 +88,19 @@ userSchema.methods.ChangedPasswordAfter = function (JWTTimestamp) {
   }
   // false means that password NOT changedd
   return false;
+};
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex"); // it's a random token
+  // This is what the user will get in the email
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpired = Date.now() + 10 * 60 * 1000;
+  console.log({ resetToken }, this.passwordResetToken);
+  return resetToken;
 };
 
 // Create the User model

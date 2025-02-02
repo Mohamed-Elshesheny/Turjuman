@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/AppError");
 const session = require("express-session");
+const Email = require("../utils/email");
+const crypto = require("crypto");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -33,6 +35,7 @@ const createSendToken = (user, statusCode, res) => {
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
+  // 1) Create the new user
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -41,6 +44,23 @@ exports.signup = catchAsync(async (req, res, next) => {
     isPremium: req.body.isPremium,
     role: req.body.role,
   });
+
+  // 2) Create a welcome email URL (if needed)
+  const welcomeURL = `${req.protocol}://${req.get("host")}/welcome`;
+
+  // 3) Send the welcome email
+  try {
+    const email = new Email(newUser, welcomeURL);
+    await email.sendWelcome();
+    console.log("Welcome email sent successfully!");
+  } catch (err) {
+    console.error("Error sending welcome email:", err);
+    return next(
+      new AppError("Failed to send welcome email. Please try again later.", 500)
+    );
+  }
+
+  // 4) Create and send token
   createSendToken(newUser, 201, res);
 });
 
@@ -192,4 +212,65 @@ exports.protectUserTranslate = catchAsync(async (req, res, next) => {
 
   req.user = currentUser;
   next();
+});
+
+exports.forgotPassword = async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(new AppError("There is no user with this email address", 404));
+  }
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  const resetURL = `${req.protocol}://${req.get(
+    "host"
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  // 3) Send it to the user's email
+  try {
+    const email = new Email(user, resetURL);
+    await email.sendPasswordReset();
+
+    res.status(200).json({
+      status: "success",
+      message: "Token sent to email!",
+    });
+  } catch (err) {
+    // Reset token if email fails to send
+    user.passwordResetToken = undefined;
+    user.passwordResetExpired = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError(
+        "There was an error sending the email. Try again later!",
+        500
+      )
+    );
+  }
+};
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpired: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new AppError("Token is invalid or expired!", 400));
+  }
+  user.password = req.body.password;
+  user.passwordconfirm = req.body.passwordconfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpired = undefined;
+  await user.save();
+
+  createSendToken(user, 200, res);
 });
