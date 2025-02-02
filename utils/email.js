@@ -43,13 +43,39 @@ module.exports = class Email {
   }
 
   async sendPasswordReset() {
-    const subject = "Your Password Reset Token (valid for 10 minutes)";
+    const subject = "🔐 Password Reset Request - Turjuman";
+
+    const customMessage = `Hi ${this.firstName},  
+  
+  We received a request to reset your password. No worries, you can set a new one using the link below:  
+  
+  🔗 **Reset Your Password:**  
+  [Click here to reset your password](${this.url})  
+  
+  ⚠️ **This link is valid for only 10 minutes.** If you did not request a password reset, you can safely ignore this email. Your account security remains intact.  
+  
+  If you need any help, feel free to reach out to our support team.  
+  
+  Best regards,  
+  The Turjuman Team 🚀`;
+
+    await this.send(subject, customMessage);
+  }
+
+  async sendWelcome() {
+    const subject = "Welcome to Turjuman!";
     const customMessage = `Hi ${this.firstName},
+  
+  Welcome to Turjuman! 🎉 We're excited to have you on board.
+  
+  Click the link below to explore our services and get started:
+  ${this.url}
+  
+  If you have any questions, feel free to reach out to us.
+  
+  Best regards,  
+  The Turjuman Team`;
 
-Forgot your password? Submit a PATCH request with your new password and passwordConfirm to:
-${this.url}
-
-If you didn’t forget your password, please ignore this email.`;
     await this.send(subject, customMessage);
   }
 };

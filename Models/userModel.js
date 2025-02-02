@@ -58,11 +58,13 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Transform the JSON output to clean up the response
+
 // Encrypt the password with salt (12 rounds) before saving
 userSchema.pre("save", async function (next) {
   // This function works only when password is modified
   if (!this.isModified("password")) return next();
-  this.password = bcrypt.hash(this.password, 12);
+  this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
   next();
 });
