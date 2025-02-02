@@ -215,21 +215,20 @@ exports.protectUserTranslate = catchAsync(async (req, res, next) => {
 });
 
 exports.forgotPassword = async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email }); // Fetch user by email
+  const user = await User.findOne({ email: req.body.email }); 
+
   if (!user) {
     return next(new AppError("There is no user with this email address", 404));
   }
 
-  // 1) Generate the reset token
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  // 2) Create the reset URL
   const resetURL = `${req.protocol}://${req.get(
     "host"
   )}/api/v1/users/resetPassword/${resetToken}`;
 
-  // 3) Send it to the user's email
+  
   try {
     const email = new Email(user, resetURL);
     await email.sendPasswordReset();

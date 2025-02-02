@@ -38,22 +38,17 @@ module.exports = class Email {
       console.log("Email sent successfully!");
     } catch (error) {
       console.error("Error sending email:", error);
-      throw error; // Re-throw the error
+      throw error;
     }
   }
 
   async sendPasswordReset() {
     const subject = "🔐 Password Reset Request - Turjuman";
-
     const customMessage = `Hi ${this.firstName},  
-  
   We received a request to reset your password. No worries, you can set a new one using the link below:  
-  
   🔗 **Reset Your Password:**  
   [Click here to reset your password](${this.url})  
-  
   ⚠️ **This link is valid for only 10 minutes.** If you did not request a password reset, you can safely ignore this email. Your account security remains intact.  
-  
   If you need any help, feel free to reach out to our support team.  
   
   Best regards,  
