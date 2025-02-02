@@ -2,7 +2,6 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const userRouter = require("./Routes/userRoute");
-const userRouterUp = require("./Routes/userRoute-unP");
 const translateRouter = require("./Routes/translateRoute");
 const AppError = require("./utils/AppError");
 const bodyParser = require("body-parser");
@@ -12,11 +11,11 @@ const session = require("express-session");
 const app = express();
 
 const corsOptions = {
-  origin: "*",
+  origin:
+    process.env.NODE_ENV === "production" ? "https://turjuman.vercel.app" : "*",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
-
 // cors
 app.use(cors(corsOptions));
 
@@ -46,8 +45,7 @@ app.get("/", (req, res) => {
   res.send("Welcome to Turjuman API[Beta]");
 });
 //Mounted Routes
-app.use("/api/v1/users-auth", userRouter);
-app.use("/api/v1/users", userRouterUp);
+app.use("/api/v1/users", userRouter);
 app.use("/api/v1/", translateRouter);
 
 //Handle unrouted routes with express
