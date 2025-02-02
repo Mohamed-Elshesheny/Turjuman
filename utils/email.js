@@ -3,6 +3,7 @@ require("dotenv").config();
 
 module.exports = class Email {
   constructor(user, url) {
+
     if (!user.email || !user.name) {
       throw new Error("Invalid user data: email or name is missing.");
     }
@@ -27,9 +28,9 @@ module.exports = class Email {
   async send(subject, customMessage) {
     try {
       const mailOptions = {
-        from: this.from, // Sender details
-        to: this.to, // Recipient email
-        subject: subject, // Email subject
+        from: this.from, 
+        to: this.to, 
+        subject: subject, 
         text:
           customMessage ||
           `Hi ${this.firstName},\n\nPlease visit the following URL: ${this.url}`,
@@ -46,7 +47,7 @@ module.exports = class Email {
   }
 
   async sendWelcome() {
-    const subject = "Welcome to Turjuman!";
+    const subject = "Welcome to Turjuman ❤️!";
     const customMessage = `Hi ${this.firstName},
 
 Welcome to Turjuman! We're excited to have you on board. Please visit the following link to get started:

@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/AppError");
 const session = require("express-session");
-const Email = require("../utils/email");
+const Email = require("../utils/email").default;
 const crypto = require("crypto");
 
 const signToken = (id) => {
@@ -228,7 +228,6 @@ exports.forgotPassword = async (req, res, next) => {
     "host"
   )}/api/v1/users/resetPassword/${resetToken}`;
 
-  // 3) Send it to the user's email
   try {
     const email = new Email(user, resetURL);
     await email.sendPasswordReset();
@@ -267,7 +266,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     return next(new AppError("Token is invalid or expired!", 400));
   }
   user.password = req.body.password;
-  user.passwordconfirm = req.body.passwordconfirm;
+  user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
   user.passwordResetExpired = undefined;
   await user.save();
