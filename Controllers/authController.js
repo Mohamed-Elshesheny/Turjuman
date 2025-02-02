@@ -86,6 +86,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Get the token from the Authorization header
+  console.log(`authController.protect triggered for: ${req.originalUrl}`);
   let token;
   if (
     req.headers.authorization &&
@@ -215,7 +216,7 @@ exports.protectUserTranslate = catchAsync(async (req, res, next) => {
 });
 
 exports.forgotPassword = async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email }); 
+  const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
     return next(new AppError("There is no user with this email address", 404));
@@ -228,7 +229,6 @@ exports.forgotPassword = async (req, res, next) => {
     "host"
   )}/api/v1/users/resetPassword/${resetToken}`;
 
-  
   try {
     const email = new Email(user, resetURL);
     await email.sendPasswordReset();
