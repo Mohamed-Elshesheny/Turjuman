@@ -58,8 +58,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-
-
 // Encrypt the password with salt (12 rounds) before saving
 userSchema.pre("save", async function (next) {
   // This function works only when password is modified
@@ -99,7 +97,7 @@ userSchema.methods.createPasswordResetToken = function () {
     .digest("hex");
 
   this.passwordResetExpired = Date.now() + 10 * 60 * 1000;
-  console.log({ resetToken }, this.passwordResetToken);
+
   return resetToken;
 };
 

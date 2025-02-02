@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/AppError");
 const session = require("express-session");
-const Email = require("../utils/email").default;
+const Email = require("../utils/email");
 const crypto = require("crypto");
 
 const signToken = (id) => {
@@ -215,19 +215,21 @@ exports.protectUserTranslate = catchAsync(async (req, res, next) => {
 });
 
 exports.forgotPassword = async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
-
+  const user = await User.findOne({ email: req.body.email }); // Fetch user by email
   if (!user) {
     return next(new AppError("There is no user with this email address", 404));
   }
 
+  // 1) Generate the reset token
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
+  // 2) Create the reset URL
   const resetURL = `${req.protocol}://${req.get(
     "host"
   )}/api/v1/users/resetPassword/${resetToken}`;
 
+  // 3) Send it to the user's email
   try {
     const email = new Email(user, resetURL);
     await email.sendPasswordReset();
@@ -265,8 +267,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError("Token is invalid or expired!", 400));
   }
+
   user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordconfirm = req.body.passwordconfirm;
   user.passwordResetToken = undefined;
   user.passwordResetExpired = undefined;
   await user.save();

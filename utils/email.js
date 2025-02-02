@@ -3,23 +3,18 @@ require("dotenv").config();
 
 module.exports = class Email {
   constructor(user, url) {
-
-    if (!user.email || !user.name) {
-      throw new Error("Invalid user data: email or name is missing.");
-    }
-
     this.to = user.email;
     this.firstName = user.name.split(" ")[0];
     this.url = url;
-    this.from = `Turjuman <mohamedelshesheny62@gmail.com>`; // Static sender email
+    this.from = `Turjuman <mohamedelshesheny62@gmail.com>`;
   }
 
   createTransport() {
     return nodemailer.createTransport({
-      host: "smtp.sendgrid.net", // SMTP host for SendGrid
-      port: 587, // SMTP port for SendGrid
+      host: "smtp.sendgrid.net",
+      port: 587,
       auth: {
-        user: "apikey", // SendGrid username
+        user: "apikey",
         pass: process.env.SENDGRID_PASSWORD, // Your SendGrid API Key
       },
     });
@@ -28,9 +23,9 @@ module.exports = class Email {
   async send(subject, customMessage) {
     try {
       const mailOptions = {
-        from: this.from, 
-        to: this.to, 
-        subject: subject, 
+        from: this.from,
+        to: this.to,
+        subject,
         text:
           customMessage ||
           `Hi ${this.firstName},\n\nPlease visit the following URL: ${this.url}`,
@@ -43,18 +38,8 @@ module.exports = class Email {
       console.log("Email sent successfully!");
     } catch (error) {
       console.error("Error sending email:", error);
+      throw error; // Re-throw the error
     }
-  }
-
-  async sendWelcome() {
-    const subject = "Welcome to Turjuman ❤️!";
-    const customMessage = `Hi ${this.firstName},
-
-Welcome to Turjuman! We're excited to have you on board. Please visit the following link to get started:
-<a href="${this.url}">${this.url}</a>
-
-If you have any questions, feel free to reach out to us.`;
-    await this.send(subject, customMessage);
   }
 
   async sendPasswordReset() {
@@ -62,7 +47,7 @@ If you have any questions, feel free to reach out to us.`;
     const customMessage = `Hi ${this.firstName},
 
 Forgot your password? Submit a PATCH request with your new password and passwordConfirm to:
-<a href="${this.url}">${this.url}</a>
+${this.url}
 
 If you didn’t forget your password, please ignore this email.`;
     await this.send(subject, customMessage);
