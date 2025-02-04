@@ -7,6 +7,7 @@ const AppError = require("./utils/AppError");
 const bodyParser = require("body-parser");
 const globalErrorHandler = require("./Middleware/errorMiddleware");
 const session = require("express-session");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
@@ -18,6 +19,7 @@ const corsOptions = {
 };
 // cors
 app.use(cors(corsOptions));
+app.use(cookieParser());
 
 app.use(
   session({
