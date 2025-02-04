@@ -73,81 +73,111 @@ exports.checkTranslationLimit = catchAsync(async (req, res, next) => {
 });
 
 exports.translateAndSave = catchAsync(async (req, res, next) => {
-  const { text, fromLang, toLang, isFavorite = false } = req.body;
+  let { word, paragraph, srcLang, targetLang, isFavorite = false } = req.body;
 
-  // Validate inputs
-  if (!text || !fromLang || !toLang) {
-    return next(new AppError("Please provide text, fromLang, and toLang", 400));
+  if (!word || !srcLang || !targetLang) {
+    return next(
+      new AppError("Please provide word, srcLang , and targetLang 😃", 400)
+    );
   }
-  const result = await translate(text, { from: fromLang, to: toLang });
 
-  const userid = req.user;
-  if (!userid) {
+  const translation = await translate(word, { from: srcLang, to: targetLang });
+
+  // Check if the word is gibberish (fallback: check if translation is the same as input)
+  if (!translation || translation.toLowerCase() === word.toLowerCase()) {
+    return res.status(200).json({
+      success: false,
+      message: "Can't find a proper translation",
+    });
+  }
+
+  const userId = req.user ? req.user.id : null;
+
+  // Guest user translation limit
+  if (!userId) {
     const GUEST_TRANSLATION_LIMIT = 2;
-    if (!req.session.guestTranslationCount) {
+    if (!req.session.guestTranslationCount)
       req.session.guestTranslationCount = 0;
-    }
 
     if (req.session.guestTranslationCount >= GUEST_TRANSLATION_LIMIT) {
       return res.status(403).json({
-        status: "fail",
+        success: false,
         message: `You have reached the maximum limit of ${GUEST_TRANSLATION_LIMIT} translations as a guest. Please log in for more translations.`,
       });
     }
 
     req.session.guestTranslationCount += 1;
     return res.status(200).json({
-      status: "success",
+      success: true,
       data: {
-        original: text,
-        translation: result,
+        original: word,
+        translation,
         count: req.session.guestTranslationCount,
       },
     });
   }
 
-  // Use translate-google to get the translation
-
-  // Check if the translation already exists in the database
-  const userId = req.user.id;
-  console.log(userId);
+  // Check if translation already exists in the database
   const existingTranslation = await savedtransModel.findOne({
-    text,
-    fromLang,
-    toLang,
+    word,
+    srcLang,
+    targetLang,
     userId,
   });
 
   if (existingTranslation) {
-    return res.status(409).json({
-      status: "success",
+    return res.status(200).json({
+      success: true,
       message: "Translation already exists",
       data: {
-        original: text,
+        original: word,
         translation: existingTranslation.translation,
         isFavorite: existingTranslation.isFavorite,
       },
     });
   }
 
-  // Save the new translation to the databas
+  // Save new translation to the database
   const savedTrans = await savedtransModel.create({
-    text,
-    fromLang,
-    toLang,
-    translation: result, // Use the result from translate-google
+    word,
+    srcLang,
+    targetLang,
+    translation,
     userId,
     isFavorite,
   });
 
   const similarTranslations = await suggestSimilarTranslations(savedTrans);
 
-  // Respond with the translation and saved entry
+  // Simulated dictionary data (as your backend currently lacks synonyms/definitions API)
+  const dictionaryData = {
+    definition:
+      "A judicial inquiry to ascertain the facts relating to an incident, such as a death.",
+    examples: [
+      "The inquest into the death of the princess concluded it was accidental.",
+      "An inquest was opened to determine the cause of the fire.",
+      "The family awaited the results of the inquest with bated breath.",
+    ],
+    synonyms_src: [
+      "inquiry",
+      "investigation",
+      "examination",
+      "probe",
+      "hearing",
+    ],
+    synonyms_target: ["استجواب", "بحث", "تدقيق", "استقصاء", "فحص"],
+  };
+
+  // Respond with updated format
   res.status(200).json({
-    status: "success",
+    success: true,
     data: {
-      original: text,
-      translation: result,
+      original: word,
+      translation,
+      definition: dictionaryData.definition,
+      examples: dictionaryData.examples,
+      synonyms_src: dictionaryData.synonyms_src,
+      synonyms_target: dictionaryData.synonyms_target,
       similarTranslations,
       savedTranslation: savedTrans,
     },
@@ -162,10 +192,10 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
 
   // Format the response to include original text and its translation
   const translations = savedTrans.map((trans) => ({
-    originalText: trans.text,
+    originalText: trans.word,
     translation: trans.translation,
-    fromLang: trans.fromLang,
-    toLang: trans.toLang,
+    srcLang: trans.srcLang,
+    targetLang: trans.targetLang,
     id: trans.id,
   }));
 
@@ -185,7 +215,7 @@ exports.getFavorites = catchAsync(async (req, res, next) => {
   // Format the response to include original text and its translation
   const favoriteTranslations = favorites.map((trans) => ({
     id: trans.id,
-    originalText: trans.text,
+    originalText: trans.word,
     translation: trans.translation,
   }));
 
@@ -202,9 +232,9 @@ exports.getalltranslations = factory.getAll(savedtransModel);
 const suggestSimilarTranslations = async (newTranslation) => {
   const similarTranslations = await savedtransModel
     .find({
-      $text: { $search: newTranslation.text },
-      fromLang: newTranslation.fromLang,
-      toLang: newTranslation.toLang,
+      word: { $regex: new RegExp(newTranslation.word, "i") },
+      srcLang: newTranslation.srcLang,
+      targetLang: newTranslation.targetLang,
       _id: { $ne: newTranslation._id },
     })
     .select("text translation")
@@ -215,7 +245,7 @@ const suggestSimilarTranslations = async (newTranslation) => {
 //search and filter
 exports.searchAndFilterTranslations = async (req, res) => {
   try {
-    const { keyword, fromLang, toLang, startDate, endDate, isFavorite } =
+    const { keyword, srcLang, targetLang, startDate, endDate, isFavorite } =
       req.query;
 
     const query = { userId: req.user.id }; // Match only translations for the authenticated user
@@ -224,12 +254,12 @@ exports.searchAndFilterTranslations = async (req, res) => {
       query.$text = { $search: keyword };
     }
 
-    if (fromLang) {
-      query.fromLang = fromLang; // Filter by source language
+    if (srcLang) {
+      query.srcLang = srcLang; // Filter by source language
     }
 
-    if (toLang) {
-      query.toLang = toLang; // Filter by target language
+    if (targetLang) {
+      query.targetLang = targetLang; // Filter by target language
     }
 
     if (startDate || endDate) {
@@ -271,12 +301,12 @@ const getTranslationStats = async (userId) => {
         createdAt: { $gte: startOfDay },
       },
     },
-    { $group: { _id: "$toLang", count: { $sum: 1 } } },
+    { $group: { _id: "$targetLang", count: { $sum: 1 } } },
     {
       $group: {
         _id: null,
         translations: {
-          $push: { toLang: "$_id", count: "$count" },
+          $push: { targetLang: "$_id", count: "$count" },
         },
         dailyTotal: { $sum: "$count" },
       },
@@ -290,12 +320,12 @@ const getTranslationStats = async (userId) => {
         createdAt: { $gte: startOfWeek },
       },
     },
-    { $group: { _id: "$toLang", count: { $sum: 1 } } },
+    { $group: { _id: "$targetLang", count: { $sum: 1 } } },
     {
       $group: {
         _id: null,
         translations: {
-          $push: { toLang: "$_id", count: "$count" },
+          $push: { targetLang: "$_id", count: "$count" },
         },
         weeklyTotal: { $sum: "$count" },
       },
@@ -309,12 +339,12 @@ const getTranslationStats = async (userId) => {
         createdAt: { $gte: startOfMonth },
       },
     },
-    { $group: { _id: "$toLang", count: { $sum: 1 } } },
+    { $group: { _id: "$targetLang", count: { $sum: 1 } } },
     {
       $group: {
         _id: null,
         translations: {
-          $push: { toLang: "$_id", count: "$count" },
+          $push: { targetLang: "$_id", count: "$count" },
         },
         monthlyTotal: { $sum: "$count" },
       },
@@ -325,7 +355,7 @@ const getTranslationStats = async (userId) => {
     { $match: { userId: new mongoose.Types.ObjectId(userId) } }, // Corrected
     {
       $group: {
-        _id: { fromLang: "$fromLang", toLang: "$toLang" },
+        _id: { srcLang: "$srcLang", targetLang: "$targetLang" },
         count: { $sum: 1 },
       },
     },

@@ -5,7 +5,7 @@ const authController = require("../Controllers/authController");
 const router = express.Router({ mergeParams: true });
 
 router.post(
-  "/translate-and-save",
+  "/translate",
   authController.protectUserTranslate,
   translateController.checkTranslationLimit,
   translateController.translateAndSave
