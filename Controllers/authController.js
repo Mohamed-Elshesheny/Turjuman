@@ -99,43 +99,36 @@ exports.logout = (req, res) => {
 
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
-  // if (
-  //   req.headers.authorization &&
-  //   req.headers.authorization.startsWith("Bearer")
-  // ) {
-  //   token = req.headers.authorization.split(" ")[1];
-  // }
+
+  console.log(req.cookies.jwt);
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
 
   if (!token) {
-    return next(new AppError("Your are not logged in, please login agin", 401));
-  }
-  try {
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
-      return next(
-        new AppError("The user is belonging to token is no longer exists", 401)
-      );
-    }
-
-    if (currentUser.changedPasswordAfter(decoded.iat)) {
-      return next(
-        new AppError(
-          "The user recently changed password!,please login again.",
-          401
-        )
-      );
-    }
-    req.user = currentUser;
-    next();
-  } catch (err) {
     return next(
-      new AppError("Your are not logged in , please login agin", 401)
+      new AppError("You are not logged in! Please log in to get access.", 401)
     );
   }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError("The user belonging to this token no longer exists.", 401)
+    );
+  }
+  if (currentUser.ChangedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError(
+        "The user recently changed the password! please log in again",
+        401
+      )
+    );
+  }
+  req.user = currentUser;
+
+  next();
 });
 
 exports.restricTo = (...roles) => {
@@ -207,27 +200,26 @@ exports.protectUserTranslate = catchAsync(async (req, res, next) => {
     req.user = null;
     return next();
   }
-  try {
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
-      req.user = null;
-      return next();
-    }
 
-    if (currentUser.changedPasswordAfter(decoded.iat)) {
-      return next(
-        new AppError(
-          "The user recently changed password!,please login again.",
-          401
-        )
-      );
-    }
-    req.user = currentUser;
-    next();
-  } catch (err) {
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const currentUser = await User.findById(decoded.id);
+
+  if (!currentUser) {
+    req.user = null;
     return next();
   }
+
+  if (currentUser.ChangedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError(
+        "The user recently changed the password! please log in again",
+        401
+      )
+    );
+  }
+
+  req.user = currentUser;
+  next();
 });
 
 exports.forgotPassword = async (req, res, next) => {
