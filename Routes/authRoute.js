@@ -23,7 +23,7 @@ router.get(
       `https://turjuman.vercel.app/auth/google/callback?token=${token}`
     );
   }
-);
+);//
 
 router.get("/login-failure", (req, res) => {
   res.send("Failed to login!");
