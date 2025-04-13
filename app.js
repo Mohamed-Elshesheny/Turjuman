@@ -10,7 +10,7 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const passport = require("passport");
-require("./utils/passport");
+require("./utils/ passport");
 const authRoute = require("./Routes/authRoute");
 
 const app = express();
