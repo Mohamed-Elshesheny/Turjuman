@@ -15,13 +15,13 @@ router.get(
     failureRedirect: "/login-failure",
   }),
   (req, res) => {
-    const token = jwt.sign(
-      { id: req.user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-    );
+    const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    });
 
-    res.redirect(`https://turjuman.vercel.app/auth/google/callback?token=${token}`);
+    res.redirect(
+      `https://turjuman.vercel.app/auth/google/callback?token=${token}`
+    );
   }
 );
 
@@ -34,5 +34,26 @@ router.get("/logout", (req, res) => {
     res.redirect("/");
   });
 });
+
+// Facebook login
+router.get(
+  "/facebook",
+  passport.authenticate("facebook", { scope: ["email"] })
+);
+
+router.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", {
+    failureRedirect: "/auth/login-failure",
+  }),
+  (req, res) => {
+    const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    });
+    res.redirect(
+      `https://turjuman.vercel.app/auth/facebook/callback?token=${token}`
+    );
+  }
+);
 
 module.exports = router;

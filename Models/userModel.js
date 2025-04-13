@@ -29,13 +29,13 @@ const userSchema = new mongoose.Schema(
       maxlength: 17,
       select: false,
       required: function () {
-        return !this.googleId;
-      }
+        return !this.googleId && !this.facebookId;
+      },
     },
     passwordConfirm: {
       type: String,
       required: function () {
-        return !this.googleId;
+        return !this.googleId && !this.facebookId;
       },
       validate: {
         validator: function (el) {
@@ -65,7 +65,12 @@ const userSchema = new mongoose.Schema(
     googleId: {
       type: String,
       unique: true,
-      sparse: true
+      sparse: true,
+    },
+    facebookId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
   },
 
