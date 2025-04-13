@@ -8,6 +8,10 @@ const bodyParser = require("body-parser");
 const globalErrorHandler = require("./Middleware/errorMiddleware");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+const helmet = require("helmet");
+const passport = require("passport");
+require("./utils/passport");
+const authRoute = require("./Routes/authRoute");
 
 const app = express();
 
@@ -17,9 +21,6 @@ const corsOptions = {
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
-// cors
-app.use(cors(corsOptions));
-app.use(cookieParser());
 
 app.use(
   session({
@@ -29,19 +30,18 @@ app.use(
     cookie: { secure: false },
   })
 );
+// cors
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(helmet());
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
 app.use(express.json({ limit: "10kb" }));
-// app.use(
-//   session({
-//     secret: process.env.JWT_SECRET, // Replace with a strong secret key
-//     resave: false, // Don't save the session if it hasn't changed
-//     saveUninitialized: true, // Save new sessions
-//   })
-// );
 
 app.get("/", (req, res) => {
   res.send("Welcome to Turjuman API[Beta]");
@@ -49,6 +49,7 @@ app.get("/", (req, res) => {
 //Mounted Routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/", translateRouter);
+app.use("/auth", authRoute);
 
 //Handle unrouted routes with express
 app.use("*", (req, res, next) => {

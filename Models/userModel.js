@@ -28,13 +28,17 @@ const userSchema = new mongoose.Schema(
       minlength: 7,
       maxlength: 17,
       select: false,
+      required: function () {
+        return !this.googleId;
+      }
     },
     passwordConfirm: {
       type: String,
-      required: [true, "Please Confirm Your Password!!"],
+      required: function () {
+        return !this.googleId;
+      },
       validate: {
         validator: function (el) {
-          // Only validate if the password is being created or modified
           return this.isModified("password") ? el === this.password : true;
         },
         message: "Passwords are not the same!",
@@ -57,6 +61,11 @@ const userSchema = new mongoose.Schema(
     photo: {
       type: String,
       default: "default.png",
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true
     },
   },
 
