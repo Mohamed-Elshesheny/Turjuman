@@ -58,19 +58,25 @@ module.exports = class Email {
   }
 
   async sendWelcome() {
-    const subject = "Welcome to Turjuman!";
-    const customMessage = `Hi ${this.firstName},
-  
-  Welcome to Turjuman! 🎉 We're excited to have you on board.
-  
-  Click the link below to explore our services and get started:
-  ${this.url}
-  
-  If you have any questions, feel free to reach out to us.
-  
-  Best regards,  
-  The Turjuman Team`;
+    try {
+      const mailOptions = {
+        from: this.from,
+        to: this.to,
+        templateId: "d-3f1136812d5d4f5aac4322f05a8a89d8",
+        dynamic_template_data: {
+          first_name: this.firstName,
+          url: this.url,
+          unsubscribe:
+            "https://turjuman.vercel.app/unsubscribe?email=" + this.to,
+          unsubscribe_preferences: "https://turjuman.vercel.app/preferences",
+        },
+      };
 
-    await this.send(subject, customMessage);
+      await this.createTransport().sendMail(mailOptions);
+      console.log("Welcome email sent successfully!");
+    } catch (error) {
+      console.error("Error sending welcome email:", error);
+      throw error;
+    }
   }
 };
