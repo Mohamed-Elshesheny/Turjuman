@@ -12,6 +12,8 @@ const helmet = require("helmet");
 const passport = require("passport");
 require("./utils/ passport");
 const authRoute = require("./Routes/authRoute");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
 
 const app = express();
 
@@ -42,6 +44,12 @@ if (process.env.NODE_ENV === "development") {
 }
 
 app.use(express.json({ limit: "10kb" }));
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
 
 app.get("/", (req, res) => {
   res.send("Welcome to Turjuman API[Beta]");
