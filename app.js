@@ -18,8 +18,8 @@ const xss = require("xss-clean");
 const app = express();
 
 const corsOptions = {
-  origin:
-    process.env.NODE_ENV === "production" ? "https://turjuman.vercel.app" : "*",
+  origin: "https://turjuman.netlify.app",
+  credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: "Content-Type,Authorization",
 };
