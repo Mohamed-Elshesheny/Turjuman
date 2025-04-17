@@ -27,7 +27,7 @@ router.get(
     });
 
     res.redirect(
-      `https://turjuman.netlify.app/auth/google/callback?token=${token}`
+      `https://turjuman.netlify.app/auth/callback?token=${token}`
     );
   }
 ); //
@@ -64,7 +64,7 @@ router.get(
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.redirect(
-      `https://turjuman.netlify.app/auth/facebook/callback?token=${token}`
+      `https://turjuman.netlify.app/auth/callback?token=${token}`
     );
   }
 );
