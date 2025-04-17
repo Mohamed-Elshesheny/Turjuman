@@ -23,11 +23,19 @@ router.get(
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      domain: '.turjuman.netlify.app',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.redirect("https://turjuman.netlify.app/app/homepage");
+    res.send(`
+      <html>
+        <head>
+          <meta http-equiv="refresh" content="0; URL='https://turjuman.netlify.app/app/homepage'" />
+        </head>
+        <body>
+          <p>Redirecting to Turjuman app...</p>
+        </body>
+      </html>
+    `);
   }
 ); //
 
@@ -60,10 +68,18 @@ router.get(
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      domain: '.turjuman.netlify.app',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.redirect("https://turjuman.netlify.app/app/homepage");
+    res.send(`
+      <html>
+        <head>
+          <meta http-equiv="refresh" content="0; URL='https://turjuman.netlify.app/app/homepage'" />
+        </head>
+        <body>
+          <p>Redirecting to Turjuman app...</p>
+        </body>
+      </html>
+    `);
   }
 );
 
