@@ -21,8 +21,8 @@ router.get(
 
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app"),
+      sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -59,12 +59,12 @@ router.get(
     });
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app"),
+      sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.redirect(
-      `https://turjuman.netlify.app/auth/google/callback?token=${token}`
+      `https://turjuman.netlify.app/auth/facebook/callback?token=${token}`
     );
   }
 );
