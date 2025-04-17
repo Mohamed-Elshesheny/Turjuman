@@ -19,11 +19,16 @@ router.get(
       expiresIn: process.env.JWT_EXPIRES_IN || "7d",
     });
 
-    res.redirect(
-      `https://turjuman.vercel.app/auth/google/callback?token=${token}`
-    );
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.redirect("https://turjuman.netlify.app/app/homepage");
   }
-);//
+); //
 
 router.get("/login-failure", (req, res) => {
   res.send("Failed to login!");
@@ -50,9 +55,13 @@ router.get(
     const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN || "7d",
     });
-    res.redirect(
-      `https://turjuman.vercel.app/auth/facebook/callback?token=${token}`
-    );
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.redirect("https://turjuman.netlify.app/app/homepage");
   }
 );
 
