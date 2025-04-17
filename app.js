@@ -34,7 +34,10 @@ app.use(
     secret: "your-secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false },
+    cookie: {
+      secure: true,
+      sameSite: "none"
+    }
   })
 );
 // cors
