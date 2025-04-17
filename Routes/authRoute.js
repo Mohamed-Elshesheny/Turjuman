@@ -19,10 +19,10 @@ router.get(
       expiresIn: process.env.JWT_EXPIRES_IN || "7d",
     });
 
-    res.cookie("token", token, {
+    res.cookie("jwt", token, {
       httpOnly: true,
       secure: true,
-      sameSite: "Strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -55,10 +55,10 @@ router.get(
     const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN || "7d",
     });
-    res.cookie("token", token, {
+    res.cookie("jwt", token, {
       httpOnly: true,
       secure: true,
-      sameSite: "Strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.redirect("https://turjuman.netlify.app/app/homepage");
