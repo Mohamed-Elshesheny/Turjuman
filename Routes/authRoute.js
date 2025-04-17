@@ -26,16 +26,9 @@ router.get(
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.send(`
-      <html>
-        <head>
-          <meta http-equiv="refresh" content="0; URL='https://turjuman.netlify.app/app/homepage'" />
-        </head>
-        <body>
-          <p>Redirecting to Turjuman app...</p>
-        </body>
-      </html>
-    `);
+    res.redirect(
+      `https://turjuman.netlify.app/auth/google/callback?token=${token}`
+    );
   }
 ); //
 
@@ -70,16 +63,9 @@ router.get(
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.send(`
-      <html>
-        <head>
-          <meta http-equiv="refresh" content="0; URL='https://turjuman.netlify.app/app/homepage'" />
-        </head>
-        <body>
-          <p>Redirecting to Turjuman app...</p>
-        </body>
-      </html>
-    `);
+    res.redirect(
+      `https://turjuman.netlify.app/auth/google/callback?token=${token}`
+    );
   }
 );
 
