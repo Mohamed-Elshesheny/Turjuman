@@ -89,8 +89,9 @@ exports.logout = (req, res) => {
   res.clearCookie("jwt", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app"),
-    sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "none" : "lax",
-    path: "/"
+    sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "None" : "Lax",
+    path: "/",
+    domain: req.hostname.includes("netlify.app") ? "turjuman.netlify.app" : undefined,
   });
 
   res.status(200).json({
