@@ -15,6 +15,7 @@ require("./utils/ passport");
 const authRoute = require("./Routes/authRoute");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
+const mobileAuth = require("./Routes/mobileAuthRoutes");
 
 const app = express();
 
@@ -37,12 +38,12 @@ app.use(
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: process.env.DB_URL,
-      collectionName: "sessions"
+      collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-    }
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    },
   })
 );
 // cors
@@ -70,6 +71,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/", translateRouter);
 app.use("/auth", authRoute);
+app.use('/auth/mobile', mobileAuth);
 
 //Handle unrouted routes with express
 app.use("*", (req, res, next) => {
