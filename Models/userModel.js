@@ -72,6 +72,11 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    loginMethod: {
+      type: String,
+      enum: ["google", "facebook", "local"],
+      default: "local",
+    },
   },
 
   { timestamps: true }
