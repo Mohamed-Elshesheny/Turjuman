@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const authController = require("../Controllers/authController");
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../Models/userModel");
+const fetch = require("node-fetch");
 
 function issueToken(res, user) {
   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
@@ -52,9 +53,9 @@ router.post("/google/mobile", async (req, res) => {
   }
 });
 
-module.exports = router;
 
-const fetch = require("node-fetch");
+
+
 
 // Facebook Mobile Login
 router.post("/facebook/mobile", async (req, res) => {
