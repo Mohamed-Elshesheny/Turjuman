@@ -15,7 +15,7 @@ function issueToken(res, user) {
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Google Mobile Login
-router.post("/google", async (req, res) => {
+router.post("/google/mobile", async (req, res) => {
   try {
     const { idToken } = req.body;
 
@@ -57,7 +57,7 @@ module.exports = router;
 const fetch = require("node-fetch");
 
 // Facebook Mobile Login
-router.post("/facebook", async (req, res) => {
+router.post("/facebook/mobile", async (req, res) => {
   try {
     const { accessToken, userID } = req.body;
 
