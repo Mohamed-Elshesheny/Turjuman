@@ -95,6 +95,6 @@ router.post("/facebook/mobile", async (req, res) => {
   }
 });
 
-router.post("/logout", authController.logout);
+router.post("/logout/mobile", authController.logout);
 
 module.exports = router;
