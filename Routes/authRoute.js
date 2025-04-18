@@ -36,11 +36,9 @@ router.get("/login-failure", (req, res) => {
   res.send("Failed to login!");
 });
 
-router.get("/logout", (req, res) => {
-  req.logout(() => {
-    res.redirect("/");
-  });
-});
+const authController = require("../Controllers/authController");
+
+router.get("/logout", authController.logout);
 
 // Facebook login
 router.get(
