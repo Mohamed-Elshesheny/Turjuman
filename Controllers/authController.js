@@ -88,8 +88,8 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.logout = (req, res) => {
   res.clearCookie("jwt", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    secure: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app"),
+    sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "None" : "Lax",
     path: "/"
   });
 
