@@ -7,6 +7,7 @@ const AppError = require("./utils/AppError");
 const bodyParser = require("body-parser");
 const globalErrorHandler = require("./Middleware/errorMiddleware");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const passport = require("passport");
@@ -31,10 +32,17 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(
   session({
-    secret: "your-secret-key",
+    secret: process.env.SESSION_SECRET || "keyboard cat",
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.DB_URL,
+      collectionName: "sessions"
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    }
   })
 );
 // cors
