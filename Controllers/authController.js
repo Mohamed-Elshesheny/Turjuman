@@ -93,7 +93,10 @@ exports.logout = (req, res) => {
     expires: new Date(0)
   });
 
-  res.redirect("https://turjuman.netlify.app/login");
+  res.status(200).json({
+    status: "success",
+    message: "Logged out successfully!",
+  });
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
