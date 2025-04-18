@@ -32,8 +32,18 @@ router.post("/google/mobile", async (req, res) => {
     let user = await User.findOne({ googleId });
 
     // Prevent login if signed up with Facebook
-    if (!user && await User.findOne({ email: payload.email, facebookId: { $exists: true } })) {
-      return res.status(400).json({ message: "This email is already registered with Facebook login." });
+    if (
+      !user &&
+      (await User.findOne({
+        email: payload.email,
+        facebookId: { $exists: true },
+      }))
+    ) {
+      return res
+        .status(400)
+        .json({
+          message: "This email is already registered with Facebook login.",
+        });
     }
 
     if (!user) {
@@ -53,10 +63,6 @@ router.post("/google/mobile", async (req, res) => {
   }
 });
 
-
-
-
-
 // Facebook Mobile Login
 router.post("/facebook/mobile", async (req, res) => {
   try {
@@ -68,13 +74,22 @@ router.post("/facebook/mobile", async (req, res) => {
     const data = await fbRes.json();
 
     if (!data.email) {
-      return res.status(400).json({ message: "Email is required from Facebook." });
+      return res
+        .status(400)
+        .json({ message: "Email is required from Facebook." });
     }
 
     // Prevent login if signed up with Google
-    const existingEmailUser = await User.findOne({ email: data.email, googleId: { $exists: true } });
+    const existingEmailUser = await User.findOne({
+      email: data.email,
+      googleId: { $exists: true },
+    });
     if (existingEmailUser) {
-      return res.status(400).json({ message: "This email is already registered with Google login." });
+      return res
+        .status(400)
+        .json({
+          message: "This email is already registered with Google login.",
+        });
     }
 
     let user = await User.findOne({ facebookId: data.id });
