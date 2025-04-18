@@ -59,7 +59,7 @@ router.post("/google", async (req, res) => {
     issueToken(res, user);
   } catch (err) {
     console.error("Google mobile login error:", err);
-    res.status(500).json({ message: "Google login failed." });
+    res.status(500).json({ message: "Google login failed.", error: err.message });
   }
 });
 
@@ -107,7 +107,7 @@ router.post("/facebook", async (req, res) => {
     issueToken(res, user);
   } catch (err) {
     console.error("Facebook mobile login error:", err);
-    res.status(500).json({ message: "Facebook login failed." });
+    res.status(500).json({ message: "Facebook login failed.", error: err.message });
   }
 });
 
