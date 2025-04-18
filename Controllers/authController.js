@@ -89,7 +89,7 @@ exports.logout = (req, res) => {
   res.clearCookie("jwt", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app"),
-    sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "None" : "Lax",
+    sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "none" : "lax",
     path: "/"
   });
 
