@@ -13,7 +13,7 @@ function issueToken(res, user) {
   res.json({ token });
 }
 
-const androidClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const androidClient = new OAuth2Client(process.env.GOOGLE_ANDROID_CLIENT_ID);
 
 // Google Mobile Login
 router.post("/google", async (req, res) => {
@@ -22,7 +22,7 @@ router.post("/google", async (req, res) => {
 
     const ticket = await androidClient.verifyIdToken({
       idToken,
-      audience:process.env.GOOGLE_CLIENT_ID,
+      audience: process.env.GOOGLE_ANDROID_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
