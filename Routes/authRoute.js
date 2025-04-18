@@ -1,9 +1,6 @@
 const express = require("express");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
-const User = require("../Models/userModel");
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const FacebookStrategy = require("passport-facebook").Strategy;
 const router = express.Router();
 
 router.get(
@@ -83,64 +80,6 @@ router.get(
     });
     res.redirect(`https://turjuman.netlify.app/auth/callback?token=${token}`);
   }
-);
-
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      let user = await User.findOne({ googleId: profile.id });
-      if (user) {
-        console.log("🔁 Existing Google user found:", user.email);
-      } else {
-        console.log(
-          "🆕 Creating new Google user for:",
-          profile.emails[0].value
-        );
-        user = await User.create({
-          googleId: profile.id,
-          name: profile.displayName,
-          email: profile.emails[0].value,
-          photo: profile.photos[0].value,
-          loginMethod: "google",
-        });
-      }
-      done(null, user);
-    }
-  )
-);
-
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env.FACEBOOK_APP_ID,
-      clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      let user = await User.findOne({ facebookId: profile.id });
-      if (user) {
-        console.log("🔁 Existing Facebook user found:", user.email);
-      } else {
-        console.log(
-          "🆕 Creating new Facebook user for:",
-          profile.emails?.[0]?.value || "No Email"
-        );
-        user = await User.create({
-          facebookId: profile.id,
-          name: profile.displayName,
-          email: profile.emails?.[0]?.value || null,
-          photo: profile.photos?.[0]?.value || null,
-          loginMethod: "facebook",
-        });
-      }
-      done(null, user);
-    }
-  )
 );
 
 module.exports = router;
