@@ -2,6 +2,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const User = require("../Models/userModel");
+const Email = require("../utils/email");
 
 // ============================
 // Google Strategy
@@ -31,6 +32,7 @@ passport.use(
             photo: profile.photos[0].value,
             loginMethod: "google",
           });
+          await new Email(user, "https://turjuman.netlify.app").sendWelcome();
         } else {
           console.log("🔁 Existing Google user found:", user.email);
         }
@@ -71,6 +73,7 @@ passport.use(
             photo: profile.photos?.[0]?.value || null,
             loginMethod: "facebook",
           });
+          await new Email(user, "https://turjuman.netlify.app").sendWelcome();
         } else {
           console.log("🔁 Existing Facebook user found:", user.email);
         }
