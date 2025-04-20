@@ -8,7 +8,7 @@ module.exports = class Email {
     this.to = user.email;
     this.firstName = user.name.split(" ")[0];
     this.url = url;
-    this.from = `Turjuman <mohamedelshesheny62@gmail.com>`;
+    this.from = `Turjuman <no-reply@turjuman.online>`;
   }
 
   async send(templateId, data) {
@@ -29,6 +29,7 @@ module.exports = class Email {
   }
 
   async sendPasswordReset() {
+    this.from = `Turjuman Support <support@turjuman.online>`;
     await this.send("d-0d8fe808f3e24fa28007e730bb526b47", {
       first_name: this.firstName,
       url: this.url,
@@ -38,6 +39,7 @@ module.exports = class Email {
   }
 
   async sendWelcome() {
+    this.from = `Turjuman <info@turjuman.online>`;
     await this.send("d-3f1136812d5d4f5aac4322f05a8a89d8", {
       first_name: this.firstName,
       url: this.url,
