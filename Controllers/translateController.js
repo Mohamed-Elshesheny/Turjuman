@@ -1,12 +1,52 @@
-const translate = require("translate-google");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const catchAsync = require("express-async-handler");
+const gemineiTranslate = require("../utils/geminiTranslate");
+const model = require("../utils/geminiModel");
+const AppError = require("../utils/AppError");
 const savedtransModel = require("../Models/savedtransModel");
 const userModel = require("../Models/userModel");
-const catchAsync = require("express-async-handler");
-const AppError = require("../utils/AppError");
-const mongoose = require("mongoose");
 const APIfeatures = require("../utils/ApiFeaturs");
 const factory = require("../Controllers/handerController");
-const session = require("express-session");
+
+// Suggest similar translations using Gemini AI semantic similarity
+const suggestSimilarTranslations = async (newTranslation) => {
+  const potentialTranslations = await savedtransModel.find({
+    srcLang: newTranslation.srcLang,
+    targetLang: newTranslation.targetLang,
+    _id: { $ne: newTranslation._id },
+  }).select("word translation");
+
+  const similarTranslations = [];
+
+  for (const trans of potentialTranslations) {
+    try {
+      const prompt = `
+        Compare the semantic similarity between the following two words in the context of translation from ${newTranslation.srcLang} to ${newTranslation.targetLang}. Respond with a JSON object {"similar": true/false, "reason": "short explanation"}.
+
+        Word 1: ${newTranslation.word}
+        Word 2: ${trans.word}
+      `;
+      const result = await model.generateContent(prompt);
+      const rawJson = await result.response.text();
+      const jsonMatch = rawJson.match(/\{[\s\S]*\}/);
+      let json = {};
+      if (jsonMatch) {
+        json = JSON.parse(jsonMatch[0]);
+      }
+      if (json.similar) {
+        similarTranslations.push({
+          ...trans._doc,
+          similarityReason: json.reason,
+        });
+      }
+    } catch (err) {
+      console.error(`Error comparing ${newTranslation.word} with ${trans.word}:`, err.message);
+    }
+  }
+
+  return similarTranslations.slice(0, 5);
+};
 
 exports.checkTranslationLimit = catchAsync(async (req, res, next) => {
   if (!req.user) {
@@ -81,21 +121,22 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     );
   }
 
-  const translation = await translate(word, { from: srcLang, to: targetLang });
+  const translationData = await gemineiTranslate(word, paragraph, srcLang, targetLang);
 
-  // Check if the word is gibberish (fallback: check if translation is the same as input)
-  if (!translation || translation.toLowerCase() === word.toLowerCase()) {
+  if (!translationData.success) {
     return res.status(200).json({
       success: false,
-      message: "Can't find a proper translation",
+      message: translationData.error || "Can't find a proper translation",
     });
   }
+
+  const translation = translationData.translation;
 
   const userId = req.user ? req.user.id : null;
 
   // Guest user translation limit
+  const GUEST_TRANSLATION_LIMIT = process.env.GUEST_LIMIT || 2;
   if (!userId) {
-    const GUEST_TRANSLATION_LIMIT = 2;
     if (!req.session.guestTranslationCount)
       req.session.guestTranslationCount = 0;
 
@@ -107,6 +148,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     }
 
     req.session.guestTranslationCount += 1;
+    console.log(`[Translation] User Guest translated "${word}" → "${translation}"`);
     return res.status(200).json({
       success: true,
       data: {
@@ -126,6 +168,17 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   });
 
   if (existingTranslation) {
+    // جلب بيانات AI للتعريف والمرادفات
+    const aiData = await gemineiTranslate(word, paragraph, srcLang, targetLang);
+
+    if (!aiData.success) {
+      return res.status(200).json({
+        success: false,
+        message: aiData.error || "Can't find a proper translation",
+      });
+    }
+
+    console.log(`[Translation] User ${userId} translated "${word}" → "${existingTranslation.translation}" (existing)`);
     return res.status(200).json({
       success: true,
       message: "Translation already exists",
@@ -133,6 +186,10 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
         original: word,
         translation: existingTranslation.translation,
         isFavorite: existingTranslation.isFavorite,
+        definition: aiData.definition,
+        examples: aiData.examples,
+        synonyms_src: aiData.synonyms_src,
+        synonyms_target: aiData.synonyms_target,
       },
     });
   }
@@ -149,24 +206,14 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
 
   const similarTranslations = await suggestSimilarTranslations(savedTrans);
 
-  // Simulated dictionary data (as your backend currently lacks synonyms/definitions API)
   const dictionaryData = {
-    definition:
-      "A judicial inquiry to ascertain the facts relating to an incident, such as a death.",
-    examples: [
-      "The inquest into the death of the princess concluded it was accidental.",
-      "An inquest was opened to determine the cause of the fire.",
-      "The family awaited the results of the inquest with bated breath.",
-    ],
-    synonyms_src: [
-      "inquiry",
-      "investigation",
-      "examination",
-      "probe",
-      "hearing",
-    ],
-    synonyms_target: ["استجواب", "بحث", "تدقيق", "استقصاء", "فحص"],
+    definition: translationData.definition,
+    examples: translationData.examples,
+    synonyms_src: translationData.synonyms_src,
+    synonyms_target: translationData.synonyms_target,
   };
+
+  console.log(`[Translation] User ${userId} translated "${word}" → "${translation}"`);
 
   // Respond with updated format
   res.status(200).json({
@@ -228,19 +275,6 @@ exports.getFavorites = catchAsync(async (req, res, next) => {
 
 exports.deleteTranslationById = factory.deleteOne(savedtransModel);
 exports.getalltranslations = factory.getAll(savedtransModel);
-
-const suggestSimilarTranslations = async (newTranslation) => {
-  const similarTranslations = await savedtransModel
-    .find({
-      word: { $regex: new RegExp(newTranslation.word, "i") },
-      srcLang: newTranslation.srcLang,
-      targetLang: newTranslation.targetLang,
-      _id: { $ne: newTranslation._id },
-    })
-    .select("text translation")
-    .limit(5);
-  return similarTranslations;
-};
 
 //search and filter
 exports.searchAndFilterTranslations = async (req, res) => {
