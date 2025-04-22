@@ -71,7 +71,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/", translateRouter);
 app.use("/auth", authRoute);
-app.use('/auth/mobile', mobileAuth);
+app.use("/auth/mobile", mobileAuth);
 
 //Handle unrouted routes with express
 app.use("*", (req, res, next) => {

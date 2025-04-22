@@ -262,10 +262,19 @@ exports.forgotPassword = async (req, res, next) => {
 };
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  const hashedToken = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
+  if (!req.params.token) {
+    return next(new AppError("Token is missing!", 400));
+  }
+
+  if (!req.body.password || !req.body.passwordConfirm) {
+    return next(new AppError("Please provide both password and passwordConfirm", 400));
+  }
+
+  if (req.body.password !== req.body.passwordConfirm) {
+    return next(new AppError("Passwords do not match.", 400));
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
 
   const user = await User.findOne({
     passwordResetToken: hashedToken,
@@ -281,6 +290,8 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.passwordResetToken = undefined;
   user.passwordResetExpired = undefined;
   await user.save();
+
+  console.log(`Resetting password for user: ${user.email}`);
 
   createSendToken(user, 200, res);
 });

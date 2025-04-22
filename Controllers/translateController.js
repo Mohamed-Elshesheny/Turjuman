@@ -439,7 +439,7 @@ exports.getFavoritesInOrder = catchAsync(async (req, res, next) => {
   // Format the response data
   const favoriteTranslations = favorites.map((trans) => ({
     id: trans.id,
-    originalText: trans.text.trim(), // Ensure trimmed output
+    originalText: trans.word.trim(), // Ensure trimmed output
     translation: trans.translation,
     createdAt: trans.createdAt,
   }));
