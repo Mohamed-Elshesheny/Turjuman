@@ -1,7 +1,8 @@
-const mongoose = require("mongoose");
-const cors = require("cors");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
+const redisClient = require("./utils/redisClient");
+const mongoose = require("mongoose");
+const cors = require("cors");
 
 const app = require("./app");
 

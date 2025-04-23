@@ -45,6 +45,7 @@
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.17.0",
     "promisify": "^0.0.3",
+    "redis": "^4.7.0",
     "sharp": "^0.33.5",
     "translate-google": "^1.5.0",
     "validator": "^13.12.0",

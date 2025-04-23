@@ -1,5 +1,5 @@
+const redisClient = require("../utils/redisClient"); // تأكد من استيراد Redis Client
 const mongoose = require("mongoose");
-const session = require("express-session");
 const catchAsync = require("express-async-handler");
 const gemineiTranslate = require("../utils/geminiTranslate");
 const model = require("../utils/geminiModel");
@@ -8,6 +8,14 @@ const savedtransModel = require("../Models/savedtransModel");
 const userModel = require("../Models/userModel");
 const APIfeatures = require("../utils/ApiFeaturs");
 const factory = require("../Controllers/handerController");
+
+const parseGeminiJson = (rawText) => {
+  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    return JSON.parse(jsonMatch[0]);
+  }
+  return {};
+};
 
 // Suggest similar translations using Gemini AI semantic similarity
 const suggestSimilarTranslations = async (newTranslation) => {
@@ -29,11 +37,7 @@ const suggestSimilarTranslations = async (newTranslation) => {
       `;
       const result = await model.generateContent(prompt);
       const rawJson = await result.response.text();
-      const jsonMatch = rawJson.match(/\{[\s\S]*\}/);
-      let json = {};
-      if (jsonMatch) {
-        json = JSON.parse(jsonMatch[0]);
-      }
+      const json = parseGeminiJson(rawJson);
       if (json.similar) {
         similarTranslations.push({
           ...trans._doc,
@@ -116,9 +120,23 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   let { word, paragraph, srcLang, targetLang, isFavorite = false } = req.body;
 
   if (!word || !srcLang || !targetLang) {
-    return next(
-      new AppError("Please provide word, srcLang , and targetLang 😃", 400)
-    );
+    return next(new AppError("Please provide word, srcLang , and targetLang 😃", 400));
+  }
+
+  const cacheKey = `translation:${word}:${srcLang}:${targetLang}`;
+  const cachedTranslation = await redisClient.get(cacheKey);
+
+  if (cachedTranslation) {
+    const parsedCache = JSON.parse(cachedTranslation);
+    console.log(`[CACHE HIT] "${word}" → "${parsedCache.translation}"`);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...parsedCache,
+        source: "cache"
+      },
+    });
   }
 
   const translationData = await gemineiTranslate(word, paragraph, srcLang, targetLang);
@@ -131,10 +149,8 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   }
 
   const translation = translationData.translation;
-
   const userId = req.user ? req.user.id : null;
 
-  // Guest user translation limit
   const GUEST_TRANSLATION_LIMIT = process.env.GUEST_LIMIT || 2;
   if (!userId) {
     if (!req.session.guestTranslationCount)
@@ -159,7 +175,6 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     });
   }
 
-  // Check if translation already exists in the database
   const existingTranslation = await savedtransModel.findOne({
     word,
     srcLang,
@@ -168,8 +183,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   });
 
   if (existingTranslation) {
-    // جلب بيانات AI للتعريف والمرادفات
-    const aiData = await gemineiTranslate(word, paragraph, srcLang, targetLang);
+    const aiData = translationData;
 
     if (!aiData.success) {
       return res.status(200).json({
@@ -194,7 +208,6 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     });
   }
 
-  // Save new translation to the database
   const savedTrans = await savedtransModel.create({
     word,
     srcLang,
@@ -213,9 +226,17 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     synonyms_target: translationData.synonyms_target,
   };
 
-  console.log(`[Translation] User ${userId} translated "${word}" → "${translation}"`);
+  await redisClient.set(cacheKey, JSON.stringify({
+    original: word,
+    translation,
+    definition: dictionaryData.definition,
+    examples: dictionaryData.examples,
+    synonyms_src: dictionaryData.synonyms_src,
+    synonyms_target: dictionaryData.synonyms_target,
+  }), { EX: 86400 }); // 24 ساعة
 
-  // Respond with updated format
+  console.log(`[CACHE MISS] Saved "${word}" → "${translation}" to cache`);
+
   res.status(200).json({
     success: true,
     data: {
@@ -397,12 +418,34 @@ const getTranslationStats = async (userId) => {
     { $limit: 2 },
   ]);
 
+  const calculatePercentages = (translations, total) => {
+    return translations
+      .map(t => ({
+        language: t.targetLang || t.language,
+        count: t.count,
+        percentage: total > 0 ? ((t.count / total) * 100).toFixed(2) + "%" : "0%"
+      }))
+      .sort((a, b) => b.count - a.count); // ترتيب تنازلي
+  };
+
   return {
-    daily: dailyStats[0] || { translations: [], total: 0 },
-    weekly: weeklyStats[0] || { translations: [], total: 0 },
-    monthly: monthlyStats[0] || { translations: [], total: 0 },
-    mostSelectedLanguages:
-      mostSelectedLanguages.length > 0 ? mostSelectedLanguages : [],
+    dailyStats: {
+      total: dailyStats[0]?.dailyTotal || 0,
+      translations: calculatePercentages(dailyStats[0]?.translations || [], dailyStats[0]?.dailyTotal || 0)
+    },
+    weeklyStats: {
+      total: weeklyStats[0]?.weeklyTotal || 0,
+      translations: calculatePercentages(weeklyStats[0]?.translations || [], weeklyStats[0]?.weeklyTotal || 0)
+    },
+    monthlyStats: {
+      total: monthlyStats[0]?.monthlyTotal || 0,
+      translations: calculatePercentages(monthlyStats[0]?.translations || [], monthlyStats[0]?.monthlyTotal || 0)
+    },
+    topLanguages: mostSelectedLanguages.map(l => ({
+      from: l._id.srcLang,
+      to: l._id.targetLang,
+      count: l.count
+    }))
   };
 };
 
