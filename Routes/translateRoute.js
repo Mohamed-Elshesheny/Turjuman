@@ -1,6 +1,8 @@
 const express = require("express");
 const translateController = require("../Controllers/translateController");
 const authController = require("../Controllers/authController");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
 
 const router = express.Router({ mergeParams: true });
 
@@ -10,6 +12,13 @@ router.post(
   translateController.checkTranslationLimit,
   translateController.translateAndSave
 );
+
+router.post(
+  "/translate-image",
+  upload.single("image"),
+  translateController.ocrTranslateImage
+);
+
 router.use(authController.protect);
 router.get("/translates", translateController.getUserTranslation);
 router.get("/favorites/translates", translateController.getFavorites);

@@ -1,3 +1,6 @@
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+const { extractAndTranslate } = require("../utils/geminiOcr");
 const redisClient = require("../utils/redisClient"); // تأكد من استيراد Redis Client
 const mongoose = require("mongoose");
 const catchAsync = require("express-async-handler");
@@ -163,13 +166,20 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
         : "❌ Can't find a proper translation";
 
     console.error("[TRANSLATION ERROR]", translationData.error);
-    return res.status(translationData.error && translationData.error.includes("quota") ? 503 : 500).json({
-      success: false,
-      message: fallbackMessage,
-      error: translationData.error || "Unknown error occurred",
-      fallback: translationData.error && translationData.error.includes("quota"),
-      details: translationData,
-    });
+    return res
+      .status(
+        translationData.error && translationData.error.includes("quota")
+          ? 503
+          : 500
+      )
+      .json({
+        success: false,
+        message: fallbackMessage,
+        error: translationData.error || "Unknown error occurred",
+        fallback:
+          translationData.error && translationData.error.includes("quota"),
+        details: translationData,
+      });
   }
 
   const translation = translationData.translation;
@@ -325,7 +335,9 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
     translation: trans.translation,
     srcLang: trans.srcLang,
     targetLang: trans.targetLang,
-    id: trans.id,
+    definition: trans.definition,
+    synonyms_src: trans.synonyms_src,
+    synonyms_target: trans.synonyms_target,
   }));
 
   res.status(200).json({
@@ -633,3 +645,36 @@ exports.userTanslations = async (req, res) => {
     res.status(500).json({ status: "error", message: "Server Error" });
   }
 };
+
+// OCR Translate Image Handler
+exports.ocrTranslateImage = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError("No image file provided", 400));
+  }
+
+  const imagePath = req.file.path;
+  const srcLang = req.body.srcLang;
+  const targetLang = req.body.targetLang;
+  console.log("Source Lang:", srcLang);
+  console.log("Target Lang:", targetLang);
+
+  if (srcLang === targetLang) {
+    return next(
+      new AppError("Source and target languages cannot be the same", 400)
+    );
+  }
+
+  const result = await extractAndTranslate(imagePath, srcLang, targetLang);
+
+  if (!result || !result.translated_text) {
+    return next(new AppError("Failed to translate image text", 500));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: {
+      original_text: result.original_text,
+      translated_text: result.translated_text,
+    },
+  });
+});
