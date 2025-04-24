@@ -1,5 +1,8 @@
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
+const path = require("path");
+const isProd = process.env.NODE_ENV === "production";
+const uploadPath = isProd ? "/tmp/uploads/" : "uploads/";
+const upload = multer({ dest: uploadPath });
 const { extractAndTranslate } = require("../utils/geminiOcr");
 const redisClient = require("../utils/redisClient"); // تأكد من استيراد Redis Client
 const mongoose = require("mongoose");
