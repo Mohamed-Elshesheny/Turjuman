@@ -1,8 +1,21 @@
 const multer = require("multer");
+const fs = require("fs");
 const path = require("path");
+
 const isProd = process.env.NODE_ENV === "production";
+
+// ✅ استخدم /tmp/uploads/ في Production دائمًا
 const uploadPath = isProd ? "/tmp/uploads/" : "uploads/";
+
+// ✅ إنشاء الفولدر لو مش موجود
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+  console.log(`Uploads folder created at: ${uploadPath}`);
+}
+
+// ✅ إعداد multer بالمسار المناسب
 const upload = multer({ dest: uploadPath });
+
 const { extractAndTranslate } = require("../utils/geminiOcr");
 const redisClient = require("../utils/redisClient"); // تأكد من استيراد Redis Client
 const mongoose = require("mongoose");
