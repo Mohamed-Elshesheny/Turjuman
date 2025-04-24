@@ -1,11 +1,16 @@
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
-const redisClient = require("./utils/redisClient");
+const fs=require('fs')
 const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = require("./app");
 
+const uploadDir = "./uploads";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+  console.log("Uploads folder created.");
+}
 mongoose
   .connect(process.env.DB_URL)
   .then((con) => {
