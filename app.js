@@ -47,7 +47,6 @@ app.use(
   })
 );
 // cors
-
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(helmet());
@@ -67,6 +66,7 @@ app.use(xss());
 app.get("/", (req, res) => {
   res.send("Welcome to Turjuman API[Beta]");
 });
+
 //Mounted Routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/", translateRouter);

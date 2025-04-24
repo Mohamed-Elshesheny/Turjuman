@@ -32,10 +32,15 @@ const savedTransSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    definition: String,
+    synonyms_src: [String],
+    synonyms_target: [String],
   },
   { timestamps: true }
 );
 savedTransSchema.index({ word: "text" });
+savedTransSchema.index({ srcLang: 1, targetLang: 1 });
+savedTransSchema.index({ userId: 1 });
 
 const savedtransModel = mongoose.model("savedTrans", savedTransSchema);
 

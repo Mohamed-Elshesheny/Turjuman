@@ -9,7 +9,7 @@ const app = require("./app");
 mongoose
   .connect(process.env.DB_URL)
   .then((con) => {
-    console.log("DB Connected Succssefly");
+    console.log("DB Connected Succssefully");
   })
   .catch((err) => {
     console.log(`There was and error ${err}`);

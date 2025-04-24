@@ -82,6 +82,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+userSchema.index({ _id: 1 });
+
 // Transform the JSON output to clean up the response
 
 // Encrypt the password with salt (12 rounds) before saving

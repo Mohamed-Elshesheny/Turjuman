@@ -157,26 +157,17 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   );
 
   if (!translationData.success) {
-    if (translationData.error && translationData.error.includes("quota")) {
-      console.error(
-        "[FALLBACK] Gemini API quota exceeded:",
-        translationData.error
-      );
-      return res.status(503).json({
-        success: false,
-        message:
-          "⚠️ Translation service is temporarily unavailable due to rate limits. Please try again in a minute.",
-        error: translationData.error,
-        fallback: true,
-        details: translationData,
-      });
-    }
+    const fallbackMessage =
+      translationData.error && translationData.error.includes("quota")
+        ? "⚠️ Translation service is temporarily unavailable due to rate limits. Please try again in a minute."
+        : "❌ Can't find a proper translation";
 
     console.error("[TRANSLATION ERROR]", translationData.error);
-    console.error("[FULL RESPONSE]", translationData);
-    return res.status(500).json({
+    return res.status(translationData.error && translationData.error.includes("quota") ? 503 : 500).json({
       success: false,
-      message: translationData.error || "❌ Can't find a proper translation",
+      message: fallbackMessage,
+      error: translationData.error || "Unknown error occurred",
+      fallback: translationData.error && translationData.error.includes("quota"),
       details: translationData,
     });
   }
@@ -252,6 +243,9 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     translation,
     userId,
     isFavorite,
+    definition: translationData.definition,
+    synonyms_src: translationData.synonyms_src,
+    synonyms_target: translationData.synonyms_target,
   });
 
   const similarTranslations = await suggestSimilarTranslations(savedTrans);
@@ -345,13 +339,23 @@ exports.getFavorites = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
 
   // Find all saved translations for the logged-in user with favorites set to true
-  const favorites = await savedtransModel.find({ userId, isFavorite: true });
+  const favorites = await savedtransModel
+    .find({ userId, isFavorite: true })
+    .sort({ createdAt: -1 });
 
   // Format the response to include original text and its translation
   const favoriteTranslations = favorites.map((trans) => ({
     id: trans.id,
     originalText: trans.word,
     translation: trans.translation,
+    srcLang: trans.srcLang,
+    targetLang: trans.targetLang,
+    isFavorite: trans.isFavorite,
+    createdAt: trans.createdAt,
+    definition: trans.definition,
+    synonyms_src: trans.synonyms_src,
+    synonyms_target: trans.synonyms_target,
+    examples: trans.examples,
   }));
 
   res.status(200).json({
@@ -600,4 +604,32 @@ const getCachedTranslation = async (
   }
 
   return null;
+};
+
+exports.userTanslations = async (req, res) => {
+  try {
+    const {
+      word,
+      paragraph,
+      srcLang,
+      targetLang,
+      startDate,
+      endDate,
+      isFavorite,
+    } = req.query;
+
+    const query = { userId: req.user.id };
+    const translations = await savedtransModel
+      .find(query)
+      .sort({ createdAt: -1 }); // من الأحدث للأقدم
+
+    res.status(200).json({
+      status: "success",
+      results: translations.length,
+      data: translations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", message: "Server Error" });
+  }
 };

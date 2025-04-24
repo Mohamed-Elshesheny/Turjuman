@@ -13,8 +13,14 @@ function issueTokenAndRedirect(req, res, loginMethod) {
 
   res.cookie("jwt", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app"),
-    sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "none" : "lax",
+    secure:
+      process.env.NODE_ENV === "production" ||
+      req.hostname.includes("vercel.app"),
+    sameSite:
+      process.env.NODE_ENV === "production" ||
+      req.hostname.includes("vercel.app")
+        ? "none"
+        : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -39,7 +45,7 @@ router.get(
 ); //
 
 router.get("/login-failure", (req, res) => {
-  res.send("Failed to login!");
+  res.redirect("https://www.turjuman.online/");
 });
 
 // Facebook login

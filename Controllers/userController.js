@@ -1,9 +1,7 @@
 const User = require("../Models/userModel");
 const catchAsync = require("express-async-handler");
 const AppError = require("./../utils/AppError");
-const ApiFeaturs = require("../utils/ApiFeaturs");
 const factory = require("../Controllers/handerController");
-const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const sharp = require("sharp");
 
