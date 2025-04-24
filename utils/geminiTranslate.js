@@ -1,8 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const genAI = new GoogleGenerativeAI(process.env.GEMINEI_API_KEY);
-
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 const prefix = "```json\n";
@@ -87,24 +86,5 @@ function basicPrompt(word, paragraph, srcLang, targetLang) {
   }}
   `;
 }
-
-// async function geminiOcrAndTranslate(
-//   imagePath,
-//   srcLang = "english",
-//   targetLang = "arabic"
-// ) {
-//   const imageBuffer = fs.readFileSync(imagePath);
-//   const base64Image = imageBuffer.toString("base64");
-//   const ocrModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-//   const result = await ocrModel.generateContent([
-//     { inlineData: { mimeType: "image/jpeg", data: base64Image } },
-//     "Extract **all visible text** from this image **exactly as it appears**, without summarizing or interpreting.",
-//   ]);
-
-//   const extractedText = result.response.text();
-//   const word = ""; // You can define logic to pick a word if needed
-//   return gemineiTranslate(word, extractedText, srcLang, targetLang);
-// }
 
 module.exports = gemineiTranslate;
