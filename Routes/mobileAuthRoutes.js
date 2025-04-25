@@ -1,5 +1,11 @@
 const express = require("express");
 const router = express.Router();
+/**
+ * @swagger
+ * tags:
+ *   name: MobileAuth
+ *   description: Endpoints for mobile authentication via Google and Facebook
+ */
 const jwt = require("jsonwebtoken");
 const authController = require("../Controllers/authController");
 const { OAuth2Client } = require("google-auth-library");
@@ -15,7 +21,30 @@ function issueToken(res, user) {
 
 const androidClient = new OAuth2Client(process.env.GOOGLE_ANDROID_CLIENT_ID);
 
-// Google Mobile Login
+/**
+ * @swagger
+ * /api/v1/mobile/google:
+ *   post:
+ *     summary: Google mobile login
+ *     tags: [MobileAuth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *                 example: "sample_id_token"
+ *     responses:
+ *       200:
+ *         description: Successful login, returns JWT token.
+ *       400:
+ *         description: Email already registered with Facebook.
+ *       500:
+ *         description: Google login failed.
+ */
 router.post("/google", async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -63,7 +92,33 @@ router.post("/google", async (req, res) => {
   }
 });
 
-// Facebook Mobile Login
+/**
+ * @swagger
+ * /api/v1/mobile/facebook:
+ *   post:
+ *     summary: Facebook mobile login
+ *     tags: [MobileAuth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               accessToken:
+ *                 type: string
+ *                 example: "sample_access_token"
+ *               userID:
+ *                 type: string
+ *                 example: "user_id_example"
+ *     responses:
+ *       200:
+ *         description: Successful login, returns JWT token.
+ *       400:
+ *         description: Email is required from Facebook or already registered with Google.
+ *       500:
+ *         description: Facebook login failed.
+ */
 router.post("/facebook", async (req, res) => {
   try {
     const { accessToken, userID } = req.body;
@@ -111,6 +166,16 @@ router.post("/facebook", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/mobile/logout/mobile:
+ *   post:
+ *     summary: Logout user from mobile
+ *     tags: [MobileAuth]
+ *     responses:
+ *       200:
+ *         description: Successfully logged out.
+ */
 router.post("/logout/mobile", authController.logout);
 
 module.exports = router;
