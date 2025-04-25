@@ -16,27 +16,10 @@
     },
     {
       "src": "/(.*)",
-      "dest": "index.js"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/public/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "dest": "index.js",
+      "headers": {
+        "Cache-Control": "s-maxage=86400"
+      }
     }
   ]
 }
