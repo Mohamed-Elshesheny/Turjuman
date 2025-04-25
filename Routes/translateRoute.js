@@ -12,18 +12,18 @@ router.post(
   translateController.translateAndSave
 );
 
+router.use(authController.protect);
+router.get("/translates", translateController.getUserTranslation);
+router.get("/favorites/translates", translateController.getFavorites);
+router.get("/Home", translateController.userTanslations);
+router.get("/favorite/:id", translateController.markAsFavoriteById);
+router.get("/favorites-order", translateController.getFavoritesInOrder);
+router.delete("/translates/:id", translateController.deleteTranslationById);
 router.post(
   "/translate-image",
   upload.single("image"),
   translateController.ocrTranslateImage
 );
-
-router.use(authController.protect);
-router.get("/translates", translateController.getUserTranslation);
-router.get("/favorites/translates", translateController.getFavorites);
-router.get("/Home", translateController.userTanslations);
-router.get("/favorites-order", translateController.getFavoritesInOrder);
-router.delete("/translates/:id", translateController.deleteTranslationById);
 router.get(
   "/translations-History-stats",
   translateController.getTranslationHistory

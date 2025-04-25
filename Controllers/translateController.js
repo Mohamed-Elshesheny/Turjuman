@@ -7,7 +7,6 @@ const model = require("../utils/geminiModel");
 const AppError = require("../utils/AppError");
 const savedtransModel = require("../Models/savedtransModel");
 const userModel = require("../Models/userModel");
-// const APIfeatures = require("../utils/ApiFeaturs");
 const factory = require("../Controllers/handerController");
 
 const parseGeminiJson = (rawText) => {
@@ -205,6 +204,18 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
         original: word,
         translation,
         count: req.session.guestTranslationCount,
+      },
+    });
+  }
+  const isSingleWord = word.trim().split(/\s+/).length === 1;
+  // Skip saving if not a single word
+  if (!isSingleWord) {
+    return res.status(200).json({
+      success: true,
+      data: {
+        original: word,
+        translation,
+        message: "Translation completed (not saved - full sentence)",
       },
     });
   }
@@ -674,5 +685,32 @@ exports.ocrTranslateImage = catchAsync(async (req, res, next) => {
       original_text: result.original_text,
       translated_text: result.translated_text,
     },
+  });
+});
+
+exports.markAsFavoriteById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  const translation = await savedtransModel
+    .findOne({
+      _id: id,
+      userId,
+    })
+    .sort({ createdAt: -1 });
+
+  if (!translation) {
+    return next(
+      new AppError("Translation not found or you don't have permission.", 404)
+    );
+  }
+
+  translation.isFavorite = true;
+  await translation.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Translation marked as favorite ✅",
+    data: translation,
   });
 });
