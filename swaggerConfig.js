@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: 'https://turjuman.online/api/v1',
+        url: 'https://turjuman.online',
         description: 'Production Server',
       },
     ],
