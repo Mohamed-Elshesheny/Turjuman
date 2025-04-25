@@ -76,10 +76,11 @@ app.use("/auth", authRoute);
 app.use("/auth/mobile", mobileAuth);
 
 app.get("/sitemap.xml", (req, res) => {
-  const sitemapPath = path.join(__dirname, "sitemap.xml");
+  const sitemapPath = path.resolve(__dirname, "sitemap.xml");
   fs.readFile(sitemapPath, (err, data) => {
     if (err) {
-      return res.status(500).end();
+      console.error("Error reading sitemap.xml:", err);
+      return res.status(500).send("Error loading sitemap.");
     }
     res.header("Content-Type", "application/xml");
     res.send(data);
