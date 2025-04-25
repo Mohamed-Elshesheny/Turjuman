@@ -8,22 +8,15 @@ const options = {
       title: 'Turjuman API Documentation',
       version: '1.0.0',
       description: 'Official API documentation for the Turjuman translation service.',
-      contact: {
-        name: 'Support',
-        email: 'support@turjuman.online',
-        url: 'https://turjuman.online',
-      },
     },
     servers: [
       {
-        url: process.env.NODE_ENV === 'production'
-          ? 'https://turjuman.online/api/v1'
-          : 'http://localhost:8001/api/v1',
-        description: process.env.NODE_ENV === 'production' ? 'Production Server' : 'Development Server',
+        url: 'https://turjuman.online/api/v1',
+        description: 'Production Server',
       },
     ],
   },
-  apis: ['./Routes/*.js', './Controllers/*.js'], // يمكنك توسعة الملفات
+  apis: ['./Routes/*.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

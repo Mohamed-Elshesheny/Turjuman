@@ -20,7 +20,12 @@ const xss = require("xss-clean");
 const mobileAuth = require("./Routes/mobileAuthRoutes");
 const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
 
+// Serve Swagger UI static files correctly
 const app = express();
+app.use(
+  "/api-docs",
+  express.static(path.join(__dirname, "node_modules/swagger-ui-dist"))
+);
 
 const corsOptions = {
   origin: ["https://turjuman.netlify.app", "https://turjuman.online"],
@@ -97,8 +102,11 @@ app.get("/robots.txt", (req, res) => {
   });
 });
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, { explorer: true })
+);
 //Handle unrouted routes with express
 app.use("*", (req, res, next) => {
   next(new AppError(`Can't Find this URL ${req.originalUrl}`, 400));
