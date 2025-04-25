@@ -18,12 +18,12 @@ const authRoute = require("./Routes/authRoute");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const mobileAuth = require("./Routes/mobileAuthRoutes");
-const { swaggerUi, swaggerSpec } = require('./swaggerConfig');
+const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
 
 const app = express();
 
 const corsOptions = {
-  origin: "https://turjuman.netlify.app",
+  origin: ["https://turjuman.netlify.app", "https://turjuman.online"],
   // const origin = process.env.NODE_ENV === "production"
   // ? "https://turjuman.netlify.app"
   // : "*";
@@ -100,7 +100,7 @@ app.get("/robots.txt", (req, res) => {
   });
 });
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //Handle unrouted routes with express
 app.use("*", (req, res, next) => {
