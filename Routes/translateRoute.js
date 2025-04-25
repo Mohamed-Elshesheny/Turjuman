@@ -1,8 +1,7 @@
 const express = require("express");
 const translateController = require("../Controllers/translateController");
 const authController = require("../Controllers/authController");
-const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
+const upload = require("../utils/uploadHandler");
 
 const router = express.Router({ mergeParams: true });
 

@@ -1,16 +1,3 @@
-const multer = require("multer");
-const fs = require("fs");
-
-// ✅ استخدم دايمًا /tmp/uploads/ لأنه مسموح في كل البيئات
-const uploadPath = "/tmp/uploads/";
-
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-  console.log(`Uploads folder created at: ${uploadPath}`);
-}
-
-const upload = multer({ dest: uploadPath });
-
 const { extractAndTranslate } = require("../utils/geminiOcr");
 const redisClient = require("../utils/redisClient"); // تأكد من استيراد Redis Client
 const mongoose = require("mongoose");
@@ -20,7 +7,7 @@ const model = require("../utils/geminiModel");
 const AppError = require("../utils/AppError");
 const savedtransModel = require("../Models/savedtransModel");
 const userModel = require("../Models/userModel");
-const APIfeatures = require("../utils/ApiFeaturs");
+// const APIfeatures = require("../utils/ApiFeaturs");
 const factory = require("../Controllers/handerController");
 
 const parseGeminiJson = (rawText) => {
