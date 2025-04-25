@@ -23,10 +23,10 @@ const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
 // Serve Swagger UI static files correctly
 const app = express();
 
-// app.use(
-//   "/api-docs",
-//   express.static(path.join(__dirname, "node_modules/swagger-ui-dist"))
-// );
+app.use(
+  "/api",
+  express.static(path.join(__dirname, "node_modules/swagger-ui-dist"))
+);
 
 const corsOptions = {
   origin: ["https://turjuman.netlify.app", "https://turjuman.online"],
