@@ -36,6 +36,7 @@
     "google-auth-library": "^9.15.1",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.9.0",
     "mongoose": "^8.8.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",

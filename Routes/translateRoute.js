@@ -24,6 +24,12 @@ router.post(
   upload.single("image"),
   translateController.ocrTranslateImage
 );
+
+router.post(
+  "/translate-file",
+  upload.single("file"),
+  translateController.translateFile
+);
 router.get(
   "/translations-History-stats",
   translateController.getTranslationHistory
