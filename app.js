@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
@@ -72,6 +74,17 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/", translateRouter);
 app.use("/auth", authRoute);
 app.use("/auth/mobile", mobileAuth);
+
+app.get("/sitemap.xml", (req, res) => {
+  const sitemapPath = path.join(__dirname, "sitemap.xml");
+  fs.readFile(sitemapPath, (err, data) => {
+    if (err) {
+      return res.status(500).end();
+    }
+    res.header("Content-Type", "application/xml");
+    res.send(data);
+  });
+});
 
 //Handle unrouted routes with express
 app.use("*", (req, res, next) => {
