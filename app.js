@@ -87,6 +87,18 @@ app.get("/sitemap.xml", (req, res) => {
   });
 });
 
+app.get("/robots.txt", (req, res) => {
+  const robotsPath = path.resolve(__dirname, "robots.txt");
+  fs.readFile(robotsPath, (err, data) => {
+    if (err) {
+      console.error("Error reading robots.txt:", err);
+      return res.status(500).send("Error loading robots.txt.");
+    }
+    res.header("Content-Type", "text/plain");
+    res.send(data);
+  });
+});
+
 //Handle unrouted routes with express
 app.use("*", (req, res, next) => {
   next(new AppError(`Can't Find this URL ${req.originalUrl}`, 400));
