@@ -17,7 +17,7 @@ const options = {
     servers: [
       {
         url: process.env.NODE_ENV === 'production'
-          ? 'https://turjuman.online/'
+          ? 'https://turjuman.online/api/v1'
           : 'http://localhost:8001/api/v1',
         description: process.env.NODE_ENV === 'production' ? 'Production Server' : 'Development Server',
       },

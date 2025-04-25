@@ -24,9 +24,6 @@ const app = express();
 
 const corsOptions = {
   origin: ["https://turjuman.netlify.app", "https://turjuman.online"],
-  // const origin = process.env.NODE_ENV === "production"
-  // ? "https://turjuman.netlify.app"
-  // : "*";
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: "Content-Type,Authorization",
