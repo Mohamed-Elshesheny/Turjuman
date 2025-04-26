@@ -1,4 +1,10 @@
+User-agent: Googlebot
+Allow: /
+
 User-agent: *
-Disallow:
+Disallow: /wp-admin/
+Disallow: /3ds.php
+Disallow: /merchant/
+Disallow: /favicon.ico
 
 Sitemap: https://turjuman.online/sitemap.xml
