@@ -45,7 +45,7 @@ router.get(
 ); //
 
 router.get("/login-failure", (req, res) => {
-  res.redirect("https://www.turjuman.online/");
+  res.redirect("https://turjuman.netlify.app/login");
 });
 
 // Facebook login
