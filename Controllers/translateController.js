@@ -140,7 +140,8 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   const cachedTranslation = await getCachedTranslation(
     hotCacheKey,
     warmCacheKey,
-    coldCacheKey
+    coldCacheKey,
+    word
   );
 
   if (cachedTranslation) {
@@ -280,8 +281,9 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     synonyms_target: translationData.synonyms_target,
   };
 
-  await redisClient.set(
+  await redisClient.hSet(
     hotCacheKey,
+    word,
     JSON.stringify({
       original: word,
       translation,
@@ -289,12 +291,13 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
       examples: dictionaryData.examples,
       synonyms_src: dictionaryData.synonyms_src,
       synonyms_target: dictionaryData.synonyms_target,
-    }),
-    { EX: 3600 }
-  ); // 1 ساعة
+    })
+  );
+  await redisClient.expire(hotCacheKey, 3600); // 1 ساعة
 
-  await redisClient.set(
+  await redisClient.hSet(
     warmCacheKey,
+    word,
     JSON.stringify({
       original: word,
       translation,
@@ -302,12 +305,13 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
       examples: dictionaryData.examples,
       synonyms_src: dictionaryData.synonyms_src,
       synonyms_target: dictionaryData.synonyms_target,
-    }),
-    { EX: 86400 }
-  ); // 24 ساعة
+    })
+  );
+  await redisClient.expire(warmCacheKey, 86400); // 24 ساعة
 
-  await redisClient.set(
+  await redisClient.hSet(
     coldCacheKey,
+    word,
     JSON.stringify({
       original: word,
       translation,
@@ -315,9 +319,9 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
       examples: dictionaryData.examples,
       synonyms_src: dictionaryData.synonyms_src,
       synonyms_target: dictionaryData.synonyms_target,
-    }),
-    { EX: 604800 }
-  ); // 7 أيام
+    })
+  );
+  await redisClient.expire(coldCacheKey, 604800); // 7 أيام
 
   console.log(`[CACHE MISS] Saved "${word}" → "${translation}" to cache`);
 
@@ -605,26 +609,24 @@ exports.getFavoritesInOrder = catchAsync(async (req, res, next) => {
 const getCachedTranslation = async (
   cacheKeyHot,
   cacheKeyWarm,
-  cacheKeyCold
+  cacheKeyCold,
+  word
 ) => {
-  let cachedTranslation = await redisClient.get(cacheKeyHot);
+  let cachedTranslation = await redisClient.hGet(cacheKeyHot, word);
   if (cachedTranslation) {
     console.log(`[HOT CACHE HIT]`);
     return JSON.parse(cachedTranslation);
   }
 
-  cachedTranslation = await redisClient.get(cacheKeyWarm);
+  cachedTranslation = await redisClient.hGet(cacheKeyWarm, word);
   if (cachedTranslation) {
     console.log(`[WARM CACHE HIT]`);
-    await redisClient.set(cacheKeyHot, cachedTranslation, { EX: 3600 }); // 1 ساعة
     return JSON.parse(cachedTranslation);
   }
 
-  cachedTranslation = await redisClient.get(cacheKeyCold);
+  cachedTranslation = await redisClient.hGet(cacheKeyCold, word);
   if (cachedTranslation) {
     console.log(`[COLD CACHE HIT]`);
-    await redisClient.set(cacheKeyWarm, cachedTranslation, { EX: 86400 }); // 24 ساعة
-    await redisClient.set(cacheKeyHot, cachedTranslation, { EX: 3600 }); // 1 ساعة
     return JSON.parse(cachedTranslation);
   }
 

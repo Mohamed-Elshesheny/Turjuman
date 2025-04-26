@@ -19,6 +19,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const mobileAuth = require("./Routes/mobileAuthRoutes");
 const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
+const compression = require("compression");
 
 // Serve Swagger UI static files correctly
 const app = express();
@@ -27,6 +28,8 @@ app.use(
   "/api",
   express.static(path.join(__dirname, "node_modules/swagger-ui-dist"))
 );
+
+app.use(compression());
 
 const corsOptions = {
   origin: ["https://turjuman.netlify.app", "https://turjuman.online"],
