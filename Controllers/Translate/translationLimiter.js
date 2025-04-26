@@ -18,9 +18,6 @@ const checkGuestLimit = (req, word, translation) => {
   }
 
   req.session.guestTranslationCount += 1;
-  console.log(
-    `[Translation] User Guest translated "${word}" → "${translation}"`
-  );
 
   return {
     allowed: true,

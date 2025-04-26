@@ -88,10 +88,18 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.logout = (req, res) => {
   res.clearCookie("jwt", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app"),
-    sameSite: process.env.NODE_ENV === "production" || req.hostname.includes("vercel.app") ? "None" : "Lax",
+    secure:
+      process.env.NODE_ENV === "production" ||
+      req.hostname.includes("vercel.app"),
+    sameSite:
+      process.env.NODE_ENV === "production" ||
+      req.hostname.includes("vercel.app")
+        ? "None"
+        : "Lax",
     path: "/",
-    domain: req.hostname.includes("netlify.app") ? "turjuman.netlify.app" : undefined,
+    domain: req.hostname.includes("netlify.app")
+      ? "turjuman.netlify.app"
+      : undefined,
   });
 
   res.status(200).json({
@@ -103,34 +111,50 @@ exports.logout = (req, res) => {
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
 
-  console.log(req.cookies.jwt);
-  if (req.cookies.jwt) {
+  // 1️⃣ Get token from header or cookie
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
 
+  // 2️⃣ Check if token exists
   if (!token) {
     return next(
       new AppError("You are not logged in! Please log in to get access.", 401)
     );
   }
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  // 3️⃣ Verify token validity
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return next(
+      new AppError("Invalid or expired token! Please log in again.", 401)
+    );
+  }
+
+  // 4️⃣ Check if user still exists
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
     return next(
       new AppError("The user belonging to this token no longer exists.", 401)
     );
   }
+
+  // 5️⃣ Check if user changed password after token was issued
   if (currentUser.ChangedPasswordAfter(decoded.iat)) {
     return next(
-      new AppError(
-        "The user recently changed the password! please log in again",
-        401
-      )
+      new AppError("Password recently changed. Please log in again.", 401)
     );
   }
-  req.user = currentUser;
 
+  // 6️⃣ Grant access
+  req.user = currentUser;
   next();
 });
 
@@ -189,12 +213,7 @@ exports.updateUserPassword = catchAsync(async (req, res, next) => {
 
 exports.protectUserTranslate = catchAsync(async (req, res, next) => {
   let token;
-  // if (
-  //   req.headers.authorization &&
-  //   req.headers.authorization.startsWith("Bearer")
-  // ) {
-  //   token = req.headers.authorization.split(" ")[1];
-  // }
+
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
@@ -267,14 +286,19 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   }
 
   if (!req.body.password || !req.body.passwordConfirm) {
-    return next(new AppError("Please provide both password and passwordConfirm", 400));
+    return next(
+      new AppError("Please provide both password and passwordConfirm", 400)
+    );
   }
 
   if (req.body.password !== req.body.passwordConfirm) {
     return next(new AppError("Passwords do not match.", 400));
   }
 
-  const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
 
   const user = await User.findOne({
     passwordResetToken: hashedToken,

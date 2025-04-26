@@ -1,6 +1,7 @@
 const express = require("express");
 const translateController = require("../Controllers/translateController");
 const authController = require("../Controllers/authController");
+const { transcribeAudioBuffer } = require("../utils/deepgram-test");
 const upload = require("../utils/uploadHandler");
 
 const router = express.Router({ mergeParams: true });
@@ -40,6 +41,8 @@ router.post(
   translateController.checkTranslationLimit,
   translateController.translateAndSave
 );
+
+router.post("/transcribe-audio", transcribeAudioBuffer);
 
 /**
  * @swagger

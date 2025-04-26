@@ -1,17 +1,58 @@
+const AppError = require("../../utils/AppError");
 const { getCachedTranslation, saveToCache } = require("./cacheService");
 const { checkGuestLimit } = require("./translationLimiter");
 const catchAsync = require("express-async-handler");
 const { findExistingTranslation, saveTranslation } = require("./dbService");
 const gemineiTranslate = require("../../utils/geminiTranslate");
 
-exports.translateAndSave = catchAsync(async (req, res, next) => {
-  let { word, paragraph, srcLang, targetLang, isFavorite = false } = req.body;
-
+// Helper: Validate required translation inputs 🚦
+const validateTranslationInput = (word, srcLang, targetLang, next) => {
   if (!word || !srcLang || !targetLang) {
     return next(
       new AppError("Please provide word, srcLang , and targetLang 😃", 400)
     );
   }
+};
+
+// Helper: Handle translation errors from service 🚫
+const handleTranslationError = (translationData, res) => {
+  const fallbackMessage =
+    translationData.error && translationData.error.includes("quota")
+      ? "⚠️ Translation service is temporarily unavailable due to rate limits. Please try again in a minute."
+      : "❌ Can't find a proper translation";
+
+  console.error("[TRANSLATION ERROR]", translationData.error);
+  return res
+    .status(
+      translationData.error && translationData.error.includes("quota")
+        ? 503
+        : 500
+    )
+    .json({
+      success: false,
+      message: fallbackMessage,
+      error: translationData.error || "Unknown error occurred",
+      fallback:
+        translationData.error && translationData.error.includes("quota"),
+      details: translationData,
+    });
+};
+
+// Helper: Check if word is single word 📝
+const isSingleWord = (word) => word.trim().split(/\s+/).length === 1;
+
+// Helper: Build dictionary data 📚
+const buildDictionaryData = (translationData) => ({
+  definition: translationData.definition,
+  examples: translationData.examples,
+  synonyms_src: translationData.synonyms_src,
+  synonyms_target: translationData.synonyms_target,
+});
+
+exports.translateAndSave = catchAsync(async (req, res, next) => {
+  let { word, paragraph, srcLang, targetLang, isFavorite = false } = req.body;
+
+  validateTranslationInput(word, srcLang, targetLang, next);
 
   const hotCacheKey = `hotcache:translation:${word}:${srcLang}:${targetLang}`;
   const warmCacheKey = `warmcache:translation:${word}:${srcLang}:${targetLang}`;
@@ -41,26 +82,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   );
 
   if (!translationData.success) {
-    const fallbackMessage =
-      translationData.error && translationData.error.includes("quota")
-        ? "⚠️ Translation service is temporarily unavailable due to rate limits. Please try again in a minute."
-        : "❌ Can't find a proper translation";
-
-    console.error("[TRANSLATION ERROR]", translationData.error);
-    return res
-      .status(
-        translationData.error && translationData.error.includes("quota")
-          ? 503
-          : 500
-      )
-      .json({
-        success: false,
-        message: fallbackMessage,
-        error: translationData.error || "Unknown error occurred",
-        fallback:
-          translationData.error && translationData.error.includes("quota"),
-        details: translationData,
-      });
+    return handleTranslationError(translationData, res);
   }
 
   const translation = translationData.translation;
@@ -70,9 +92,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     const limitResult = checkGuestLimit(req, word, translation);
     return res.status(limitResult.response.status).json(limitResult.response);
   }
-  const isSingleWord = word.trim().split(/\s+/).length === 1;
-  // Skip saving if not a single word
-  if (!isSingleWord) {
+  if (!isSingleWord(word)) {
     return res.status(200).json({
       success: true,
       data: {
@@ -130,12 +150,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     synonyms_target: translationData.synonyms_target,
   });
 
-  const dictionaryData = {
-    definition: translationData.definition,
-    examples: translationData.examples,
-    synonyms_src: translationData.synonyms_src,
-    synonyms_target: translationData.synonyms_target,
-  };
+  const dictionaryData = buildDictionaryData(translationData);
 
   await saveToCache(
     hotCacheKey,
