@@ -2,6 +2,7 @@ const { getCachedTranslation, saveToCache } = require("./cacheService");
 const { checkGuestLimit } = require("./translationLimiter");
 const catchAsync = require("express-async-handler");
 const { findExistingTranslation, saveTranslation } = require("./dbService");
+const gemineiTranslate = require("../../utils/geminiTranslate");
 
 exports.translateAndSave = catchAsync(async (req, res, next) => {
   let { word, paragraph, srcLang, targetLang, isFavorite = false } = req.body;
