@@ -1,36 +1,40 @@
+// 📦 Core Modules
 const fs = require("fs");
 const path = require("path");
+
+// 🚀 Third-party Packages
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-const userRouter = require("./Routes/userRoute");
-const translateRouter = require("./Routes/translateRoute");
-const AppError = require("./utils/AppError");
-const bodyParser = require("body-parser");
-const globalErrorHandler = require("./Middleware/errorMiddleware");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const passport = require("passport");
-require("./utils/ passport");
-const authRoute = require("./Routes/authRoute");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
-const mobileAuth = require("./Routes/mobileAuthRoutes");
-const { swaggerUi, swaggerSpec } = require("./utils/swaggerConfig");
 const compression = require("compression");
 
-// Serve Swagger UI static files correctly
+// 🛠 Custom Modules
+const userRouter = require("./Routes/userRoute");
+const translateRouter = require("./Routes/translateRoute");
+const authRoute = require("./Routes/authRoute");
+const mobileAuth = require("./Routes/mobileAuthRoutes");
+const AppError = require("./utils/AppError");
+const globalErrorHandler = require("./Middleware/errorMiddleware");
+const { swaggerUi, swaggerSpec } = require("./utils/swaggerConfig");
+require("./utils/ passport");
+
+// 🚀 Express App Initialization
 const app = express();
 
-app.use(
-  "/api",
-  express.static(path.join(__dirname, "node_modules/swagger-ui-dist"))
-);
+// 🗂 Serve Static Files
+app.use("/api", express.static(path.join(__dirname, "node_modules/swagger-ui-dist")));
 
+// ⚡️ Enable Compression
 app.use(compression());
 
+// 🌐 CORS Configuration
 const corsOptions = {
   origin: ["https://turjuman.netlify.app", "https://turjuman.online"],
   credentials: true,
@@ -39,7 +43,10 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// 🍪 Cookie Parser
 app.use(cookieParser());
+
+// 🗝 Session Management
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "keyboard cat",
@@ -55,33 +62,36 @@ app.use(
     },
   })
 );
-// cors
+
+// 🔐 Authentication with Passport
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(helmet());
 
+// 🛡 Security Middlewares
+app.use(helmet());
+app.use(mongoSanitize());
+app.use(xss());
+
+// 📝 Logging in Development
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
+// 📦 Body Parser
 app.use(express.json({ limit: "10kb" }));
 
-// Data sanitization against NoSQL query injection
-app.use(mongoSanitize());
-
-// Data sanitization against XSS
-app.use(xss());
-
+// 🎯 API Home Route
 app.get("/", (req, res) => {
-  res.send("Welcome to Turjuman API[Beta]");
+  res.send("Welcome to Turjuman API [Beta]");
 });
 
-//Mounted Routes
+// 🛣 Mounted Routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/", translateRouter);
 app.use("/auth", authRoute);
 app.use("/auth/mobile", mobileAuth);
 
+// 🗺 Sitemap Route
 app.get("/sitemap.xml", (req, res) => {
   const sitemapPath = path.resolve(__dirname, "sitemap.xml");
   fs.readFile(sitemapPath, (err, data) => {
@@ -94,6 +104,7 @@ app.get("/sitemap.xml", (req, res) => {
   });
 });
 
+// 🤖 Robots.txt Route
 app.get("/robots.txt", (req, res) => {
   const robotsPath = path.resolve(__dirname, "robots.txt");
   fs.readFile(robotsPath, (err, data) => {
@@ -106,17 +117,16 @@ app.get("/robots.txt", (req, res) => {
   });
 });
 
-app.use(
-  "/api/docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpec, { explorer: true })
-);
+// 📚 Swagger Docs Route
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
 
-//Handle unrouted routes with express
+// ❌ Handle Unmatched Routes
 app.use("*", (req, res, next) => {
   next(new AppError(`Can't Find this URL ${req.originalUrl}`, 400));
 });
 
+// 🛠 Global Error Handler
 app.use(globalErrorHandler);
+
 
 module.exports = app;
