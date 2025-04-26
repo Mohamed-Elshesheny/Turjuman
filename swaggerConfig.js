@@ -8,6 +8,11 @@ const options = {
       title: 'Turjuman API Documentation',
       version: '1.0.0',
       description: 'Official API documentation for the Turjuman translation service.',
+      contact: {
+        name: 'Turjuman Support',
+        url: 'https://turjuman.online/contact',
+        email: 'support@turjuman.online',
+      },
     },
     servers: [
       {
@@ -15,8 +20,22 @@ const options = {
         description: 'Production Server',
       },
     ],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
   apis: ['./Routes/*.js'],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
+  },
 };
 
 const swaggerSpec = swaggerJsdoc(options);

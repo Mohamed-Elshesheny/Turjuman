@@ -22,6 +22,8 @@ const router = express.Router({ mergeParams: true });
  *             properties:
  *               text:
  *                 type: string
+ *               Paragraph:
+ *                 type: string
  *               sourceLang:
  *                 type: string
  *               targetLang:
