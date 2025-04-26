@@ -18,7 +18,7 @@ const authRoute = require("./Routes/authRoute");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const mobileAuth = require("./Routes/mobileAuthRoutes");
-const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
+const { swaggerUi, swaggerSpec } = require("./utils/swaggerConfig");
 const compression = require("compression");
 
 // Serve Swagger UI static files correctly
