@@ -37,7 +37,7 @@ router.get("/logout", authController.logout);
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "/login-failure",
+    failureRedirect: "/auth/login-failure",
   }),
   (req, res) => {
     issueTokenAndRedirect(req, res, "google");
