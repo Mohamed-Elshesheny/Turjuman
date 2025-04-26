@@ -29,7 +29,8 @@ const suggestSimilarTranslations = async (newTranslation) => {
       targetLang: newTranslation.targetLang,
       _id: { $ne: newTranslation._id },
     })
-    .select("word translation");
+    .select("word translation")
+    .limit(2);
 
   const similarityPromises = potentialTranslations.map(async (trans) => {
     try {
@@ -49,10 +50,7 @@ const suggestSimilarTranslations = async (newTranslation) => {
         };
       }
     } catch (err) {
-      console.error(
-        `Error comparing ${newTranslation.word} with ${trans.word}:`,
-        err.message
-      );
+      console.warn(`[SIMILARITY] Failed for "${trans.word}"`);
     }
     return null;
   });
