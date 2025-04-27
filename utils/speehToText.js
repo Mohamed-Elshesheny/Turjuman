@@ -1,3 +1,5 @@
+const cloudinary = require("./Cloudinary");
+const axios = require("axios");
 require("dotenv").config(); // Load environment variables
 const { createClient } = require("@deepgram/sdk");
 const gemineiTranslate = require("./geminiTranslate");
@@ -45,20 +47,47 @@ const transcribeAudioBuffer = async (
 
 const transcribeAudioHandler = async (req, res) => {
   try {
-    const audioBuffer = req.file.buffer;
-    const mimetype = req.file.mimetype || "audio/wav";
-    const language = "en-US"; // Adjust based on your audio
+    const fileBuffer = req.file.buffer;
 
-    const result = await transcribeAudioBuffer(audioBuffer, mimetype, language);
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { resource_type: "auto" },
+      async (error, result) => {
+        if (error) {
+          console.error("❌ Cloudinary Error:", error);
+          return res.status(500).json({ success: false, error });
+        }
 
-    if (!result.success) {
-      return res.status(500).json({ success: false, error: result.error });
-    }
+        const audioUrl = result.secure_url;
+        const response = await axios.get(audioUrl, {
+          responseType: "arraybuffer",
+        });
+        const audioBuffer = Buffer.from(response.data, "binary");
+        const mimetype = response.headers["content-type"] || "audio/wav";
 
-    res.status(200).json({ success: true, transcript: result.transcript, translation: result.translation });
+        const deepgramResult = await transcribeAudioBuffer(
+          audioBuffer,
+          mimetype,
+          "en-US"
+        );
+
+        if (!deepgramResult.success) {
+          return res
+            .status(500)
+            .json({ success: false, error: deepgramResult.error });
+        }
+
+        res.status(200).json({
+          success: true,
+          transcript: deepgramResult.transcript,
+          translation: deepgramResult.translation,
+        });
+      }
+    );
+
+    uploadStream.end(fileBuffer);
   } catch (error) {
     console.error("❌ Error processing transcription:", error);
-    res.status(500).json({ success: false, error });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
