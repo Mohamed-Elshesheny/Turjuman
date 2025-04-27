@@ -1,51 +1,63 @@
 const redisClient = require("../../utils/redisClient");
 
-const getCachedTranslation = async (
-  hotCacheKey,
-  warmCacheKey,
-  coldCacheKey,
-  word
-) => {
-  const hotCache = await redisClient.hGet(hotCacheKey, word);
-  if (hotCache) return JSON.parse(hotCache);
+/**
+ * @class TranslationCache
+ * @description Manages tiered caching of translations using Redis (hot, warm, cold).
+ */
+class TranslationCache {
+  constructor(hotCacheKey, warmCacheKey, coldCacheKey) {
+    this.cacheKeys = {
+      hot: hotCacheKey,
+      warm: warmCacheKey,
+      cold: coldCacheKey,
+    };
+    this.expirations = {
+      hot: 3600, // 1 hour
+      warm: 86400, // 24 hours
+      cold: 604800, // 7 days
+    };
+  }
 
-  const warmCache = await redisClient.hGet(warmCacheKey, word);
-  if (warmCache) return JSON.parse(warmCache);
+  /**
+   * Retrieve translation from cache tiers.
+   * @param {string} word
+   * @returns {Promise<object|null>}
+   */
+  async getCachedTranslation(word) {
+    for (const tier of ["hot", "warm", "cold"]) {
+      const key = this.cacheKeys[tier];
+      const cache = await redisClient.hGet(key, word);
+      if (cache) return JSON.parse(cache);
+    }
+    return null;
+  }
 
-  const coldCache = await redisClient.hGet(coldCacheKey, word);
-  if (coldCache) return JSON.parse(coldCache);
+  /**
+   * Save translation to all cache tiers.
+   * @param {string} word
+   * @param {object} dictionaryData
+   * @param {string} translation
+   */
+  async saveToCache(word, dictionaryData, translation) {
+    const cacheData = JSON.stringify({
+      original: word,
+      translation,
+      definition: dictionaryData.definition,
+      examples: dictionaryData.examples,
+      synonyms_src: dictionaryData.synonyms_src,
+      synonyms_target: dictionaryData.synonyms_target,
+    });
 
-  return null;
-};
+    const pipeline = redisClient.multi();
 
-const saveToCache = async (
-  hotCacheKey,
-  warmCacheKey,
-  coldCacheKey,
-  word,
-  dictionaryData,
-  translation
-) => {
-  const cacheData = JSON.stringify({
-    original: word,
-    translation,
-    definition: dictionaryData.definition,
-    examples: dictionaryData.examples,
-    synonyms_src: dictionaryData.synonyms_src,
-    synonyms_target: dictionaryData.synonyms_target,
-  });
+    for (const tier of ["hot", "warm", "cold"]) {
+      const key = this.cacheKeys[tier];
+      pipeline.hSet(key, word, cacheData);
+      pipeline.expire(key, this.expirations[tier]);
+    }
 
-  await redisClient.hSet(hotCacheKey, word, cacheData);
-  await redisClient.expire(hotCacheKey, 3600); // 1 hour
+    await pipeline.exec();
+  }
+}
 
-  await redisClient.hSet(warmCacheKey, word, cacheData);
-  await redisClient.expire(warmCacheKey, 86400); // 24 hours
-
-  await redisClient.hSet(coldCacheKey, word, cacheData);
-  await redisClient.expire(coldCacheKey, 604800); // 7 days
-};
-
-module.exports = {
-  getCachedTranslation,
-  saveToCache,
-};
+module.exports = TranslationCache;

@@ -7,6 +7,6 @@ if (!fs.existsSync(uploadPath)) {
   console.log(`Uploads folder created at: ${uploadPath}`);
 }
 
-const upload = multer({ dest: uploadPath });
+const upload = multer(); // In-memory
 
 module.exports = upload;

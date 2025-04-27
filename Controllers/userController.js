@@ -1,3 +1,7 @@
+/**
+ * User Controller - Handles user-related operations such as profile updates, photo uploads,
+ * and account deactivation. Integrates with Multer for file handling and Sharp for image processing.
+ */
 const User = require("../Models/userModel");
 const catchAsync = require("express-async-handler");
 const AppError = require("./../utils/AppError");
@@ -5,8 +9,10 @@ const factory = require("../Controllers/handerController");
 const multer = require("multer");
 const sharp = require("sharp");
 
+// Configure Multer to store uploaded images in memory for processing
 const multerStorage = multer.memoryStorage();
 
+// Filter to allow only image files to be uploaded
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
     cb(null, true);
@@ -15,13 +21,19 @@ const multerFilter = (req, file, cb) => {
   }
 };
 
+// Initialize Multer with defined storage and file filter
 const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
 });
 
+// Middleware to handle single file upload for user photos
 exports.uploadUserPhoto = upload.single("photo");
 
+/**
+ * Middleware to resize uploaded user photos.
+ * Saves the processed image to the filesystem with a unique filename.
+ */
 exports.resizeUserPhoto = (req, res, next) => {
   if (!req.file) return next();
 
@@ -36,6 +48,10 @@ exports.resizeUserPhoto = (req, res, next) => {
   next();
 };
 
+/**
+ * Utility function to filter out unwanted fields from request body.
+ * Only allows specified fields to be updated.
+ */
 const filterObj = (obj, ...allowedfileds) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
@@ -44,12 +60,19 @@ const filterObj = (obj, ...allowedfileds) => {
   return newObj;
 };
 
-// Here we made a middleware to save the current user ID
+/**
+ * Middleware to attach current user's ID to request parameters.
+ * Useful for reusing generic getOne methods.
+ */
 exports.getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();
 };
 
+/**
+ * Controller for updating current user's data (excluding password).
+ * Validates input and updates allowed fields only.
+ */
 exports.updateMe = catchAsync(async (req, res, next) => {
   //1) create error if user update password
   if (req.body.password || req.body.passwordConfirm) {
@@ -79,6 +102,10 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * Controller to deactivate the current user's account.
+ * Sets 'active' field to false without deleting the user data.
+ */
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
   res.status(204).json({
@@ -87,6 +114,10 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * Admin Controller: Update user details by ID.
+ * Allows selective update and validates modified fields.
+ */
 exports.updateUser = catchAsync(async (req, res, next) => {
   const doc = await User.findByIdAndUpdate(
     req.params.id,
@@ -110,6 +141,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
   });
 });
 
+// Generic factory methods for standard CRUD operations
 exports.getAllUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
 exports.deleteMe = factory.deleteOne(User);

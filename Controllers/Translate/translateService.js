@@ -1,5 +1,8 @@
 const AppError = require("../../utils/AppError");
-const { getCachedTranslation, saveToCache } = require("./cacheService");
+const TranslationCache = require("./cacheService");
+// Helper: Build cache key dynamically
+const buildCacheKey = (tier, word, srcLang, targetLang) =>
+  `${tier}cache:translation:${word}:${srcLang}:${targetLang}`;
 const { checkGuestLimit } = require("./translationLimiter");
 const catchAsync = require("express-async-handler");
 const { findExistingTranslation, saveTranslation } = require("./dbService");
@@ -54,15 +57,16 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
 
   validateTranslationInput(word, srcLang, targetLang, next);
 
-  const hotCacheKey = `hotcache:translation:${word}:${srcLang}:${targetLang}`;
-  const warmCacheKey = `warmcache:translation:${word}:${srcLang}:${targetLang}`;
-  const coldCacheKey = `coldcache:translation:${word}:${srcLang}:${targetLang}`;
-  const cachedTranslation = await getCachedTranslation(
+  const hotCacheKey = buildCacheKey("hot", word, srcLang, targetLang);
+  const warmCacheKey = buildCacheKey("warm", word, srcLang, targetLang);
+  const coldCacheKey = buildCacheKey("cold", word, srcLang, targetLang);
+  const cacheManager = new TranslationCache(
     hotCacheKey,
     warmCacheKey,
-    coldCacheKey,
-    word
+    coldCacheKey
   );
+
+  const cachedTranslation = await cacheManager.getCachedTranslation(word);
 
   if (cachedTranslation) {
     return res.status(200).json({
@@ -152,14 +156,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
 
   const dictionaryData = buildDictionaryData(translationData);
 
-  await saveToCache(
-    hotCacheKey,
-    warmCacheKey,
-    coldCacheKey,
-    word,
-    dictionaryData,
-    translation
-  );
+  await cacheManager.saveToCache(word, dictionaryData, translation);
   console.log(`[CACHE MISS] Saved "${word}" → "${translation}" to cache`);
 
   res.status(200).json({

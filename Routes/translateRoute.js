@@ -1,7 +1,7 @@
 const express = require("express");
 const translateController = require("../Controllers/translateController");
 const authController = require("../Controllers/authController");
-const { transcribeAudioBuffer } = require("../utils/speehToText");
+const { transcribeAudioHandler } = require("../utils/speehToText");
 const upload = require("../utils/uploadHandler");
 
 const router = express.Router({ mergeParams: true });
@@ -42,28 +42,36 @@ router.post(
   translateController.translateAndSave
 );
 
-const fs = require("fs");
 
-router.post("/transcribe-audio", upload.single("audio"), async (req, res) => {
-  try {
-    const audioBuffer = fs.readFileSync(req.file.path);
-    const mimetype = req.file.mimetype || "audio/wav";
-    const language = "en-US"; // Adjust based on your audio
-
-    const result = await transcribeAudioBuffer(audioBuffer, mimetype, language);
-
-    fs.unlinkSync(req.file.path); // Remove file after processing
-
-    if (!result.success) {
-      return res.status(500).json({ success: false, error: result.error });
-    }
-
-    res.status(200).json({ success: true, transcript: result.transcript });
-  } catch (error) {
-    console.error("❌ Error processing transcription:", error);
-    res.status(500).json({ success: false, error });
-  }
-});
+/**
+ * @swagger
+ * /api/v1/transcribe-audio:
+ *   post:
+ *     summary: Transcribe and translate audio
+ *     description: Upload an audio file to transcribe it into text and translate it into Arabic.
+ *     tags:
+ *       - Translations
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               audio:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Audio transcribed and translated successfully
+ *       400:
+ *         description: Audio processing failed
+ */
+router.post(
+  "/transcribe-audio",
+  upload.single("audio"),
+  transcribeAudioHandler
+);
 
 /**
  * @swagger

@@ -43,4 +43,23 @@ const transcribeAudioBuffer = async (
   }
 };
 
-module.exports = { transcribeAudioBuffer };
+const transcribeAudioHandler = async (req, res) => {
+  try {
+    const audioBuffer = req.file.buffer;
+    const mimetype = req.file.mimetype || "audio/wav";
+    const language = "en-US"; // Adjust based on your audio
+
+    const result = await transcribeAudioBuffer(audioBuffer, mimetype, language);
+
+    if (!result.success) {
+      return res.status(500).json({ success: false, error: result.error });
+    }
+
+    res.status(200).json({ success: true, transcript: result.transcript, translation: result.translation });
+  } catch (error) {
+    console.error("❌ Error processing transcription:", error);
+    res.status(500).json({ success: false, error });
+  }
+};
+
+module.exports = { transcribeAudioBuffer, transcribeAudioHandler };
