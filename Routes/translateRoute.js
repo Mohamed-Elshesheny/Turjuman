@@ -42,7 +42,6 @@ router.post(
   translateController.translateAndSave
 );
 
-
 /**
  * @swagger
  * /api/v1/transcribe-audio:
