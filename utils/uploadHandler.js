@@ -1,7 +1,6 @@
 const multer = require("multer");
 const fs = require("fs");
 
-// ✅ استخدم /tmp/uploads/ في السيرفر
 const uploadPath = "/tmp/uploads/";
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });

@@ -29,7 +29,10 @@ require("./utils/ passport");
 const app = express();
 
 // 🗂 Serve Static Files
-app.use("/api", express.static(path.join(__dirname, "node_modules/swagger-ui-dist")));
+app.use(
+  "/api",
+  express.static(path.join(__dirname, "node_modules/swagger-ui-dist"))
+);
 
 // ⚡️ Enable Compression
 app.use(compression());
@@ -118,7 +121,11 @@ app.get("/robots.txt", (req, res) => {
 });
 
 // 📚 Swagger Docs Route
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
+app.use(
+  "/api/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, { explorer: true })
+);
 
 // ❌ Handle Unmatched Routes
 app.use("*", (req, res, next) => {
@@ -127,6 +134,5 @@ app.use("*", (req, res, next) => {
 
 // 🛠 Global Error Handler
 app.use(globalErrorHandler);
-
 
 module.exports = app;

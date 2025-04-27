@@ -1,37 +1,42 @@
-# **Turjuman - Translation Application**
+# **Turjuman - AI-Powered Translation Platform**
 
-**Turjuman** is a dynamic and user-friendly translation application that provides powerful tools for text translation, saving, and management. Designed to cater to both free-tier and premium users, Turjuman empowers users to handle their translations efficiently and with ease.
-
----
-
-## **Features**
-
-### **Core Features**
-
-- **Dynamic Translation**: Translate single words or entire sentences between multiple languages using the powerful `translate-google` API.
-- **Save Translations**: Save translations securely to your account for future reference.
-- **Favorites Management**: Mark translations as favorites for quick and easy access.
-- **Daily Translation Limit**:
-  - Free-tier users can translate up to **10 times per day**.
-  - Premium-tier users enjoy a generous limit of **100 translations per day**.
-- **Translation History**: Retrieve all previously saved translations with detailed metadata, including the source and target languages.
-
-### **Upcoming Features**
-
-- **Bulk Translation Support**: Translate and save multiple sentences or paragraphs at once.
-- **Export Options**: Allow users to download their translations in CSV or JSON format.
-- **AI-Powered Contextual Translations**: Enhance translation accuracy with AI models for contextual understanding.
-- **Speech-to-Text and Text-to-Speech Integration**: Enable users to dictate translations and hear them spoken aloud.
+**Turjuman** is a dynamic, AI-powered translation platform that offers seamless and intelligent tools for text and voice translation, saving, and management. Designed for both free-tier and premium users, Turjuman leverages cutting-edge AI services to deliver fast, accurate, and context-aware translations.
 
 ---
 
-## **Tech Stack**
+## **Key Features**
 
-- **Backend**: Node.js with Express.js
-- **Database**: MongoDB (Mongoose ODM)
-- **Authentication**: JSON Web Token (JWT)-based secure authentication
-- **Translation API**: [`translate-google`](https://www.npmjs.com/package/translate-google) npm package
+### **Core Capabilities**
+
+- **Real-Time AI Translation**: Instantly translate words, sentences, or full paragraphs across multiple languages using state-of-the-art AI translation models.
+- **Secure Translation Management**: Save translations under your account with complete access to metadata and context.
+- **Smart Favorites & History**: Easily tag and retrieve important translations with a fully searchable history.
+- **Voice Translation (Speech-to-Text)**: Transcribe spoken language into text using **Deepgram** AI, enabling voice-based translation workflows.
+- **Usage Limits**:
+  - Free-tier: Up to **10 translations per day**.
+  - Premium-tier: Up to **100 translations per day** with priority AI processing.
+
+### **Planned Enhancements**
+
+- **Bulk Translation API**: Efficiently handle large volumes of text in one go.
+- **Downloadable Reports**: Export translations in CSV, JSON, or PDF formats for offline use.
+- **Offline Translation Access**: Use cached translations without an internet connection.
+- **Voice Output (Text-to-Speech)**: Listen to translated text with natural-sounding AI voices.
+- **Advanced Security Layer**: Includes HTTP Parameter Pollution (HPP) protection and data sanitization.
 
 ---
 
-Built with ❤️ by Turjuman Team.
+## **Technology Stack**
+
+- **Backend**: Node.js (Express.js)
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT-secured user authentication
+- **AI Services**:
+  - **Deepgram**: Speech-to-text AI
+  - **Google Gemini**: Contextual language AI for enhanced translation
+- **Caching**: Redis for accelerated data retrieval
+- **Hosting**: Backend on **Vercel**, Frontend on **Netlify**
+
+---
+
+Built with ❤️ by the Turjuman Team | © 2025 All rights reserved.

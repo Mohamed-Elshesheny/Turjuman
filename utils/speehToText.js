@@ -1,16 +1,15 @@
 require("dotenv").config(); // Load environment variables
-
 const { createClient } = require("@deepgram/sdk");
-const fs = require("fs");
+const gemineiTranslate = require("./geminiTranslate");
 
 // Deepgram API Key 🔑 from .env
 const deepgram = createClient(process.env.VOICE_AI_KEY);
 
-// Function to transcribe audio buffer 🎙️
+// Function to transcribe audio buffer 🎙️ and translate to Arabic 🌐
 const transcribeAudioBuffer = async (
   audioBuffer,
   mimetype = "audio/wav",
-  language = "auto"
+  language = "en-US"
 ) => {
   try {
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
@@ -18,6 +17,8 @@ const transcribeAudioBuffer = async (
       {
         mimetype,
         language,
+        smart_format: true,
+        model: "nova-2", // Optional, depending on tier
       }
     );
 
@@ -26,9 +27,15 @@ const transcribeAudioBuffer = async (
       return { success: false, error };
     }
 
+    const transcript = result.results.channels[0].alternatives[0].transcript;
+
+    // Translate transcript to Arabic
+    const translationData = await gemineiTranslate(transcript, "", "en", "ar");
+
     return {
       success: true,
-      transcript: result.results.channels[0].alternatives[0].transcript,
+      transcript,
+      translation: translationData.translation || null,
     };
   } catch (err) {
     console.error("❌ Unexpected Error:", err);

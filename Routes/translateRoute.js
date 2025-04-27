@@ -1,7 +1,7 @@
 const express = require("express");
 const translateController = require("../Controllers/translateController");
 const authController = require("../Controllers/authController");
-const { transcribeAudioBuffer } = require("../utils/deepgram-test");
+const { transcribeAudioBuffer } = require("../utils/speehToText");
 const upload = require("../utils/uploadHandler");
 
 const router = express.Router({ mergeParams: true });
@@ -42,7 +42,28 @@ router.post(
   translateController.translateAndSave
 );
 
-router.post("/transcribe-audio", transcribeAudioBuffer);
+const fs = require("fs");
+
+router.post("/transcribe-audio", upload.single("audio"), async (req, res) => {
+  try {
+    const audioBuffer = fs.readFileSync(req.file.path);
+    const mimetype = req.file.mimetype || "audio/wav";
+    const language = "en-US"; // Adjust based on your audio
+
+    const result = await transcribeAudioBuffer(audioBuffer, mimetype, language);
+
+    fs.unlinkSync(req.file.path); // Remove file after processing
+
+    if (!result.success) {
+      return res.status(500).json({ success: false, error: result.error });
+    }
+
+    res.status(200).json({ success: true, transcript: result.transcript });
+  } catch (error) {
+    console.error("❌ Error processing transcription:", error);
+    res.status(500).json({ success: false, error });
+  }
+});
 
 /**
  * @swagger
