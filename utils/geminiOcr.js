@@ -1,12 +1,49 @@
 const fs = require("fs");
+const fetch = require("node-fetch");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  secure: true,
+  url: process.env.CLOUDINARY_URL,
+});
+
 const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// 🆕 رفع الصورة إلى كلاوديناري (يدعم Buffer)
+async function uploadToCloudinary(imageBuffer) {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      { resource_type: "image" },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result.secure_url);
+        }
+      }
+    ).end(imageBuffer);
+  });
+}
 
-// 📝 استخراج النص من الصورة
-async function extractTextWithGemini(imagePath) {
-  const imageBuffer = fs.readFileSync(imagePath);
-  const base64Image = imageBuffer.toString("base64");
+// 📝 استخراج النص من الصورة (يدعم URL كلاوديناري أو مسار محلي)
+async function extractTextWithGemini(imagePathOrUrl) {
+  if (!imagePathOrUrl) {
+    throw new Error("imagePathOrUrl is required");
+  }
+  let base64Image;
+
+  if (imagePathOrUrl.startsWith("http")) {
+    // Fetch from Cloudinary URL
+    const response = await fetch(imagePathOrUrl);
+    const buffer = await response.buffer();
+    base64Image = buffer.toString("base64");
+  } else {
+    // Local file path
+    const imageBuffer = fs.readFileSync(imagePathOrUrl);
+    base64Image = imageBuffer.toString("base64");
+  }
+
   const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const result = await model.generateContent([
@@ -43,7 +80,10 @@ async function processImageTranslation(
   targetLang = "arabic"
 ) {
   try {
-    const extractedText = await extractTextWithGemini(imagePath);
+    const uploadedUrl = await uploadToCloudinary(imagePath);
+    console.log("Uploaded URL:", uploadedUrl);
+
+    const extractedText = await extractTextWithGemini(uploadedUrl);
     console.log("Extracted Text:", extractedText);
 
     const translatedText = await translateText(
@@ -56,6 +96,7 @@ async function processImageTranslation(
     return {
       original_text: extractedText,
       translated_text: translatedText,
+      image_url: uploadedUrl,
     };
   } catch (err) {
     console.error("Error:", err);
@@ -69,16 +110,29 @@ async function extractAndTranslate(
   srcLang = "english",
   targetLang = "arabic"
 ) {
-  const extractedText = await extractTextWithGemini(imagePath);
-  const translatedText = await translateText(
-    extractedText,
-    srcLang,
-    targetLang
-  );
-  return {
-    original_text: extractedText,
-    translated_text: translatedText,
-  };
+  try {
+    const uploadedUrl = await uploadToCloudinary(imagePath);
+    console.log("Uploaded URL:", uploadedUrl);
+
+    const extractedText = await extractTextWithGemini(uploadedUrl);
+    console.log("Extracted Text:", extractedText);
+
+    const translatedText = await translateText(
+      extractedText,
+      srcLang,
+      targetLang
+    );
+    console.log("Translated Text:", translatedText);
+
+    return {
+      original_text: extractedText,
+      translated_text: translatedText,
+      image_url: uploadedUrl,
+    };
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
+  }
 }
 
 module.exports = {
@@ -86,4 +140,5 @@ module.exports = {
   translateText,
   processImageTranslation,
   extractAndTranslate,
+  uploadToCloudinary,
 };

@@ -7,7 +7,7 @@ const ocrTranslateImage = catchAsync(async (req, res, next) => {
     return next(new AppError("No image file provided", 400));
   }
 
-  const imagePath = req.file.path;
+  const imageBuffer = req.file.buffer;
   const srcLang = req.body.srcLang;
   const targetLang = req.body.targetLang;
   console.log("Source Lang:", srcLang);
@@ -19,7 +19,7 @@ const ocrTranslateImage = catchAsync(async (req, res, next) => {
     );
   }
 
-  const result = await extractAndTranslate(imagePath, srcLang, targetLang);
+  const result = await extractAndTranslate(imageBuffer, srcLang, targetLang);
 
   if (!result || !result.translated_text) {
     return next(new AppError("Failed to translate image text", 500));
