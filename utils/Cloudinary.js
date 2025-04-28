@@ -1,7 +1,7 @@
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
-  secure: true, // Ensure HTTPS URLs
+  secure: true, 
   url: process.env.CLOUDINARY_URL,
 });
 
