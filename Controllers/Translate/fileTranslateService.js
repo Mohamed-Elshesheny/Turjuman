@@ -27,7 +27,7 @@ const translateFile = catchAsync(async (req, res, next) => {
   let fileContent = "";
 
   if (ext === ".txt") {
-    fileContent = await fs.readFile(filePath, "utf-8");
+    fileContent = filePath.toString("utf-8");
   } else if (ext === ".docx") {
     const result = await mammoth.extractRawText({ buffer: req.file.buffer });
     fileContent = result.value;
@@ -51,7 +51,7 @@ const translateFile = catchAsync(async (req, res, next) => {
 
   const translations = [];
 
-  for (let i = 0; i < chunks.length; i++) {
+  for (let i = 0; i < Math.min(chunks.length, 3); i++) {
     try {
       const translated = await translateParagraph(
         chunks[i],
