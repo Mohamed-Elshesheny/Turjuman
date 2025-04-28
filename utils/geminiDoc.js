@@ -1,8 +1,14 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const cloudinary = require("cloudinary").v2;
 
 // Initialize Gemini API with your key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+cloudinary.config({
+  secure: true, 
+  url: process.env.CLOUDINARY_URL,
+});
 
 // Function to split text into manageable chunks
 function splitText(text, chunkSize = 400, overlap = 20) {
@@ -55,4 +61,5 @@ ${paragraph}
 module.exports = {
   translateParagraph,
   splitText,
+  cloudinary,
 };
