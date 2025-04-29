@@ -8,13 +8,6 @@
   ],
   "routes": [
     {
-      "src": "^/$",
-      "status": 307,
-      "headers": {
-        "Location": "https://turjuman.netlify.app/login"
-      }
-    },
-    {
       "src": "/(.*)",
       "dest": "index.js",
       "headers": {

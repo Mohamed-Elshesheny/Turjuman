@@ -13,16 +13,15 @@ const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // 🆕 رفع الصورة إلى كلاوديناري (يدعم Buffer)
 async function uploadToCloudinary(imageBuffer) {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
-      { resource_type: "image" },
-      (error, result) => {
+    cloudinary.uploader
+      .upload_stream({ resource_type: "image" }, (error, result) => {
         if (error) {
           reject(error);
         } else {
           resolve(result.secure_url);
         }
-      }
-    ).end(imageBuffer);
+      })
+      .end(imageBuffer);
   });
 }
 
@@ -68,7 +67,7 @@ async function translateText(text, srcLang = "english", targetLang = "arabic") {
   `;
 
   const result = await model.generateContent(prompt);
-  const rawJson = await result.response.text();
+  const rawJson = result.response.text();
   const json = JSON.parse(rawJson.trim().replace(/```json|```/g, ""));
   return json.translation;
 }

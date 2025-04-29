@@ -21,6 +21,7 @@ const createSendToken = (user, statusCode, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
+    sameSite: none,
   };
   if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
   res.cookie("jwt", token, cookieOptions);
@@ -159,6 +160,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 });
 
 exports.restricTo = (...roles) => {
+  // Rest Parameter
   // roles is an array of ['admin'] return is the middleware fun
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

@@ -1,6 +1,5 @@
 const path = require("path");
-const fs = require("fs/promises");
-const mammoth = require("mammoth");
+const mammoth = require("mammoth"); //Read text from Docx
 const AppError = require("../../utils/AppError");
 const {
   translateParagraph,
