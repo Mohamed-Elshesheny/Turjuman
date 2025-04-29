@@ -39,11 +39,16 @@ app.use(compression());
 
 // 🌐 CORS Configuration
 const corsOptions = {
-  origin: ["https://turjuman.netlify.app", "https://turjuman.online"],
+  origin: [
+    "https://turjuman.netlify.app",
+    "https://turjuman.online",
+    "https://www.turjuman.online",
+  ],
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
+
 app.use(cors(corsOptions));
 
 // 🍪 Cookie Parser
