@@ -48,8 +48,8 @@ module.exports = class Email {
     await this.send("d-0d8fe808f3e24fa28007e730bb526b47", {
       first_name: this.firstName,
       url: this.url,
-      unsubscribe: `https://turjuman.vercel.app/unsubscribe?email=${this.to}`,
-      unsubscribe_preferences: "https://turjuman.vercel.app/preferences",
+      unsubscribe: `https://turjuman.online/unsubscribe?email=${this.to}`,
+      unsubscribe_preferences: "https://turjuman.online/preferences",
     });
   }
 
@@ -58,8 +58,8 @@ module.exports = class Email {
     await this.send("d-3f1136812d5d4f5aac4322f05a8a89d8", {
       first_name: this.firstName,
       url: this.url,
-      unsubscribe: `https://turjuman.vercel.app/unsubscribe?email=${this.to}`,
-      unsubscribe_preferences: "https://turjuman.vercel.app/preferences",
+      unsubscribe: `https://turjuman.online/unsubscribe?email=${this.to}`,
+      unsubscribe_preferences: "https://turjuman.online/preferences",
     });
   }
 
@@ -81,8 +81,8 @@ module.exports = class Email {
         invoice_id: "INV-" + Math.floor(Math.random() * 100000), // يمكنك تحسين هذا لاحقاً
         amount: items.reduce((total, item) => total + item.amount, 0),
         url: this.url,
-        unsubscribe: `https://turjuman.vercel.app/unsubscribe?email=${this.to}`,
-        unsubscribe_preferences: "https://turjuman.vercel.app/preferences",
+        unsubscribe: `https://turjuman.online/unsubscribe?email=${this.to}`,
+        unsubscribe_preferences: "https://turjuman.online/preferences",
       },
     };
 

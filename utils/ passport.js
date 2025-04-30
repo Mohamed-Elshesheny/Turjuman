@@ -32,7 +32,7 @@ passport.use(
             photo: profile.photos[0].value,
             loginMethod: "google",
           });
-          await new Email(user, "https://turjuman.netlify.app").sendWelcome();
+          await new Email(user, "https://turjuman.online").sendWelcome();
         } else {
           console.log("🔁 Existing Google user found:", user.email);
         }
@@ -73,7 +73,7 @@ passport.use(
             photo: profile.photos?.[0]?.value || null,
             loginMethod: "facebook",
           });
-          await new Email(user, "https://turjuman.netlify.app").sendWelcome();
+          await new Email(user, "https://turjuman.online").sendWelcome();
         } else {
           console.log("🔁 Existing Facebook user found:", user.email);
         }

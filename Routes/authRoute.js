@@ -24,7 +24,7 @@ function issueTokenAndRedirect(req, res, loginMethod) {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.redirect(`https://turjuman.netlify.app/auth/callback?token=${token}`);
+  res.redirect(`https://turjuman.online/auth/callback?token=${token}`);
 }
 
 router.get(
@@ -45,7 +45,7 @@ router.get(
 ); //
 
 router.get("/login-failure", (req, res) => {
-  res.redirect("https://turjuman.netlify.app/login");
+  res.redirect("https://turjuman.online/login");
 });
 
 // Facebook login
