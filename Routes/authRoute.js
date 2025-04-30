@@ -13,14 +13,8 @@ function issueTokenAndRedirect(req, res, loginMethod) {
 
   res.cookie("jwt", token, {
     httpOnly: true,
-    secure:
-      process.env.NODE_ENV === "production" ||
-      req.hostname.includes("vercel.app"),
-    sameSite:
-      process.env.NODE_ENV === "production" ||
-      req.hostname.includes("vercel.app")
-        ? "none"
-        : "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -29,7 +23,7 @@ function issueTokenAndRedirect(req, res, loginMethod) {
 
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", { scope: ["profile", "email"], callbackURL: "https://turjuman.online/auth/google/callback" })
 );
 
 router.get("/logout", authController.logout);
@@ -38,6 +32,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     failureRedirect: "/auth/login-failure",
+    callbackURL: "https://turjuman.online/auth/google/callback",
   }),
   (req, res) => {
     issueTokenAndRedirect(req, res, "google");
@@ -51,13 +46,14 @@ router.get("/login-failure", (req, res) => {
 // Facebook login
 router.get(
   "/facebook",
-  passport.authenticate("facebook", { scope: ["email"] })
+  passport.authenticate("facebook", { scope: ["email"], callbackURL: "https://turjuman.online/auth/facebook/callback" })
 );
 
 router.get(
   "/facebook/callback",
   passport.authenticate("facebook", {
     failureRedirect: "/auth/login-failure",
+    callbackURL: "https://turjuman.online/auth/facebook/callback",
   }),
   (req, res) => {
     issueTokenAndRedirect(req, res, "facebook");
