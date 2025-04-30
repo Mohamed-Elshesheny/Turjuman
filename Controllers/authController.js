@@ -16,14 +16,22 @@ const signToken = (id) => {
 
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
+  console.log("Generated token:", token);
+  console.log("JWT_SECRET:", process.env.JWT_SECRET);
+  const cookieExpiresInDays = process.env.JWT_COOKIE_EXPIRES_IN || 7;
+
   const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
+    expires: new Date(Date.now() + cookieExpiresInDays * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    sameSite: "None",
   };
-  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
+
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+    cookieOptions.sameSite = "None";
+  } else {
+    cookieOptions.sameSite = "Lax";
+  }
+
   res.cookie("jwt", token, cookieOptions);
 
   user.password = undefined;
@@ -89,18 +97,10 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.logout = (req, res) => {
   res.clearCookie("jwt", {
     httpOnly: true,
-    secure:
-      process.env.NODE_ENV === "production" ||
-      req.hostname.includes("vercel.app"),
-    sameSite:
-      process.env.NODE_ENV === "production" ||
-      req.hostname.includes("vercel.app")
-        ? "None"
-        : "Lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
     path: "/",
-    domain: req.hostname.includes("netlify.app")
-      ? "turjuman.netlify.app"
-      : undefined,
+    domain: ".turjuman.online",
   });
 
   res.status(200).json({
@@ -134,6 +134,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   try {
     decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
+    console.error("JWT verify error:", err);
     return next(
       new AppError("Invalid or expired token! Please log in again.", 401)
     );
