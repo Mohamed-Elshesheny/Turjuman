@@ -77,6 +77,12 @@ const userSchema = new mongoose.Schema(
       enum: ["google", "facebook", "local"],
       default: "local",
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
   },
 
   { timestamps: true }
@@ -127,6 +133,17 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetExpired = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
+};
+
+userSchema.methods.createEmailVerifyToken = function () {
+  const verifyToken = crypto.randomBytes(32).toString("hex");
+  this.emailVerificationToken = crypto
+    .createHash("sha256")
+    .update(verifyToken)
+    .digest("hex");
+
+  this.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+  return verifyToken;
 };
 
 // Create the User model

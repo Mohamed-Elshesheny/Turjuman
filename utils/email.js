@@ -5,9 +5,9 @@ require("dotenv").config();
 sgMail.setApiKey(process.env.SENDGRID_PASSWORD); // or SENDGRID_API_KEY if renamed
 
 module.exports = class Email {
-  constructor(user, url) {
-    this.to = user.email;
-    this.firstName = user.name.split(" ")[0];
+  constructor(email, name, url) {
+    this.to = email;
+    this.firstName = name?.split(" ")[0] || "";
     this.url = url;
     this.from = `Turjuman <no-reply@turjuman.online>`;
   }
@@ -53,15 +53,15 @@ module.exports = class Email {
     });
   }
 
-  async sendWelcome() {
-    this.setSender("info");
-    await this.send("d-3f1136812d5d4f5aac4322f05a8a89d8", {
-      first_name: this.firstName,
-      url: this.url,
-      unsubscribe: `https://turjuman.online/unsubscribe?email=${this.to}`,
-      unsubscribe_preferences: "https://turjuman.online/preferences",
-    });
-  }
+  // async sendWelcome() {
+  //   this.setSender("info");
+  //   await this.send("d-3f1136812d5d4f5aac4322f05a8a89d8", {
+  //     first_name: this.firstName,
+  //     url: this.url,
+  //     unsubscribe: `https://turjuman.online/unsubscribe?email=${this.to}`,
+  //     unsubscribe_preferences: "https://turjuman.online/preferences",
+  //   });
+  // }
 
   async sendInvoice(items) {
     this.setSender("billing");
@@ -88,5 +88,15 @@ module.exports = class Email {
 
     await sgMail.send(msg);
     console.log("📩 Invoice template sent!");
+  }
+
+  async sendVerificationEmail() {
+    this.setSender("info");
+    await this.send("d-e021b42e83bd42cbb70219ced68f1c7c", {
+      first_name: this.firstName,
+      url: this.url,
+      unsubscribe: `https://turjuman.online/unsubscribe?email=${this.to}`,
+      unsubscribe_preferences: "https://turjuman.online/preferences",
+    });
   }
 };

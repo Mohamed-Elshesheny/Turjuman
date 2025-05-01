@@ -55,23 +55,16 @@ exports.signup = catchAsync(async (req, res, next) => {
     role: req.body.role,
   });
 
-  // 2) Create a welcome email URL (if needed)
-  const welcomeURL = `${req.protocol}://${req.get("host")}/welcome`;
+  const verifyToken = newUser.createEmailVerifyToken();
+  await newUser.save({ validateBeforeSave: false });
 
-  // 3) Send the welcome email
-  try {
-    const email = new Email(newUser, welcomeURL);
-    await email.sendWelcome();
-    console.log("Welcome email sent successfully!");
-  } catch (err) {
-    console.error("Error sending welcome email:", err);
-    return next(
-      new AppError("Failed to send welcome email. Please try again later.", 500)
-    );
-  }
-
-  // 4) Create and send token
-  createSendToken(newUser, 201, res);
+  const verificationURL = `${req.protocol}://${req.get("host")}/api/v1/users/verify-email/${verifyToken}`;
+  const email = new Email(newUser.email, newUser.name, verificationURL);
+  await email.sendVerificationEmail();
+  return res.status(200).json({
+    status: "success",
+    message: "Verification email sent. Please check your inbox.",
+  });
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -85,6 +78,12 @@ exports.login = catchAsync(async (req, res, next) => {
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError("Invalid email or password", 401));
+  }
+
+  if (!user.isEmailVerified) {
+    return next(
+      new AppError("Please verify your email before logging in.", 401)
+    );
   }
 
   if (user) {
@@ -145,6 +144,12 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!currentUser) {
     return next(
       new AppError("The user belonging to this token no longer exists.", 401)
+    );
+  }
+
+  if (!currentUser.isEmailVerified) {
+    return next(
+      new AppError("Please verify your email before accessing this route.", 403)
     );
   }
 
@@ -239,6 +244,12 @@ exports.protectUserTranslate = catchAsync(async (req, res, next) => {
     return next();
   }
 
+  if (!currentUser.isEmailVerified) {
+    return next(
+      new AppError("Please verify your email before accessing this route.", 403)
+    );
+  }
+
   if (currentUser.ChangedPasswordAfter(decoded.iat)) {
     return next(
       new AppError(
@@ -326,4 +337,33 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   console.log(`Resetting password for user: ${user.email}`);
 
   createSendToken(user, 200, res);
+});
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  const token = req.params.token;
+
+  if (!token) {
+    return next(new AppError("Token is missing.", 400));
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new AppError("Token is invalid or has expired.", 400));
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: "success",
+    message: "Email verified successfully!",
+  });
 });

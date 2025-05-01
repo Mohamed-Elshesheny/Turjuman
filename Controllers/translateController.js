@@ -31,7 +31,8 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
 
   // Format the response to include original text and its translation
   const translations = savedTrans.map((trans) => ({
-    originalText: trans.word,
+    id:trans.id,
+    original: trans.word,
     translation: trans.translation,
     srcLang: trans.srcLang,
     targetLang: trans.targetLang,
@@ -60,7 +61,7 @@ exports.getFavorites = catchAsync(async (req, res, next) => {
   // Format the response with detailed favorite translations
   const favoriteTranslations = favorites.map((trans) => ({
     id: trans.id,
-    originalText: trans.word,
+    original: trans.word,
     translation: trans.translation,
     srcLang: trans.srcLang,
     targetLang: trans.targetLang,

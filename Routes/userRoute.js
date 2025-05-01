@@ -27,6 +27,27 @@ router.get("/test-invoice", async (req, res) => {
 
 /**
  * @swagger
+ * /api/v1/users/verify-email/{token}:
+ *   get:
+ *     summary: Verify user email
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Email verification token
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid or expired token
+ */
+router.get("/verify-email/:token", authController.verifyEmail);
+
+/**
+ * @swagger
  * /api/v1/users/signup:
  *   post:
  *     summary: Register a new user
