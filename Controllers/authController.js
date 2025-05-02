@@ -1,12 +1,10 @@
 const User = require("./../Models/userModel");
 const catchAsync = require("express-async-handler");
-const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/AppError");
-const session = require("express-session");
 const Email = require("../utils/email");
 const crypto = require("crypto");
-const cookieParser = require("cookie-parser");
+const bcrypt = require("bcrypt");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -52,7 +50,9 @@ exports.signup = catchAsync(async (req, res, next) => {
   const verifyToken = newUser.createEmailVerifyToken();
   await newUser.save({ validateBeforeSave: false });
 
-  const verificationURL = `${req.protocol}://${req.get("host")}/api/v1/users/verify-email/${verifyToken}`;
+  const verificationURL = `${req.protocol}://${req.get(
+    "host"
+  )}/api/v1/users/verify-email/${verifyToken}`;
   const email = new Email(newUser.email, newUser.name, verificationURL);
   await email.sendVerificationEmail();
   return res.status(200).json({
@@ -65,7 +65,7 @@ exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return next(new AppError("Please Provide an email and a passowrd!", 400));
+    return next(new AppError("Please Provide an email and a password!", 400));
   }
 
   const user = await User.findOne({ email }).select("+password");
@@ -192,7 +192,7 @@ exports.updateUserPassword = catchAsync(async (req, res, next) => {
     return next(new AppError("Passwords do not match. Please try again.", 400));
   }
 
-  const hashedPassword = crypto.hash(password, 12);
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   const user = await User.findByIdAndUpdate(
     req.params.id,

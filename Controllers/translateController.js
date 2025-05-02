@@ -27,11 +27,13 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
 
   // Retrieve all saved translations for the logged-in user
-  const savedTrans = await savedtransModel.find({ userId });
+  const savedTrans = await savedtransModel
+    .find({ userId })
+    .sort({ createdAt: -1 });
 
   // Format the response to include original text and its translation
   const translations = savedTrans.map((trans) => ({
-    id:trans.id,
+    id: trans.id,
     original: trans.word,
     translation: trans.translation,
     srcLang: trans.srcLang,
