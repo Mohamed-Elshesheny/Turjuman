@@ -16,8 +16,6 @@ const signToken = (id) => {
 
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
-  console.log("Generated token:", token);
-  console.log("JWT_SECRET:", process.env.JWT_SECRET);
   const cookieExpiresInDays = process.env.JWT_COOKIE_EXPIRES_IN || 7;
 
   const cookieOptions = {
@@ -220,16 +218,9 @@ exports.updateUserPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.protectUserTranslate = catchAsync(async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies.jwt) {
-    token = req.cookies.jwt;
-  }
+  const token = req.headers.authorization?.startsWith("Bearer")
+    ? req.headers.authorization.split(" ")[1]
+    : req.cookies?.jwt;
 
   if (!token) {
     req.user = null;
