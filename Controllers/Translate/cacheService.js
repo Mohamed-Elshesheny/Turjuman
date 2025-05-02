@@ -36,12 +36,13 @@ class TranslationCache {
    * Save translation to all cache tiers.
    * @param {string} word
    * @param {object} dictionaryData
-   * @param {string} translation
+   * @param {object} translationObj
    */
-  async saveToCache(word, dictionaryData, translation) {
+  async saveToCache(word, dictionaryData, translationObj) {
     const cacheData = JSON.stringify({
+      id: translationObj.id,
       original: word,
-      translation,
+      translation: translationObj.translation,
       definition: dictionaryData.definition,
       examples: dictionaryData.examples,
       synonyms_src: dictionaryData.synonyms_src,

@@ -72,6 +72,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     return res.status(200).json({
       success: true,
       data: {
+        id: cachedTranslation.id,
         ...cachedTranslation,
         source: cachedTranslation.source || "cache",
       },
@@ -156,7 +157,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
 
   const dictionaryData = buildDictionaryData(translationData);
 
-  await cacheManager.saveToCache(word, dictionaryData, translation);
+  await cacheManager.saveToCache(word, dictionaryData, savedTrans);
   console.log(`[CACHE MISS] Saved "${word}" → "${translation}" to cache`);
 
   res.status(200).json({
