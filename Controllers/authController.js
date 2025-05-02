@@ -21,14 +21,10 @@ const createSendToken = (user, statusCode, res) => {
   const cookieOptions = {
     expires: new Date(Date.now() + cookieExpiresInDays * 24 * 60 * 60 * 1000),
     httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    domain: ".turjuman.online",
   };
-
-  if (process.env.NODE_ENV === "production") {
-    cookieOptions.secure = true;
-    cookieOptions.sameSite = "None";
-  } else {
-    cookieOptions.sameSite = "Lax";
-  }
 
   res.cookie("jwt", token, cookieOptions);
 
