@@ -42,8 +42,14 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
     }
   }
 
-  // لو فيه يوزر جيب ترجماته، لو مفيش هات العامة
-  const query = userId ? { userId } : { isPublic: true };
+  if (!userId) {
+    return res.status(401).json({
+      status: "fail",
+      message: "Unauthorized: Login required to view your translations",
+    });
+  }
+
+  const query = { userId };
 
   const translations = await savedtransModel
     .find(query)
