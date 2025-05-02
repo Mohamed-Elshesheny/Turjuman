@@ -103,6 +103,7 @@ exports.logout = (req, res) => {
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
+  
   const token = req.headers.authorization?.startsWith("Bearer")
     ? req.headers.authorization.split(" ")[1]
     : req.cookies?.jwt;
