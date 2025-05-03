@@ -1,3 +1,4 @@
+const APIfeatures = require("../utils/ApiFeaturs");
 const catchAsync = require("express-async-handler");
 
 // Models 📦
@@ -27,12 +28,17 @@ exports.checkTranslationLimit = checkTranslationLimit;
 exports.getUserTranslation = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
 
-  // Retrieve all saved translations for the logged-in user
-  const savedTrans = await savedtransModel
-    .find({ userId })
-    .sort({ createdAt: -1 });
+  const features = new APIfeatures(
+    savedtransModel.find({ userId }),
+    req.query
+  )
+    .filter()
+    .sort()
+    .limitFields()
+    .pagination();
 
-  // Format the response to include original text and its translation
+  const savedTrans = await features.mongoesquery;
+
   const translations = savedTrans.map((trans) => ({
     id: trans.id,
     isFavorite: trans.isFavorite,
@@ -57,10 +63,16 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
 exports.getFavorites = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
 
-  // Retrieve all favorite translations for the logged-in user, sorted by newest
-  const favorites = await savedtransModel
-    .find({ userId, isFavorite: true })
-    .sort({ createdAt: -1 });
+  const features = new APIfeatures(
+    savedtransModel.find({ userId, isFavorite: true }),
+    req.query
+  )
+    .filter()
+    .sort()
+    .limitFields()
+    .pagination();
+
+  const favorites = await features.mongoesquery;
 
   // Format the response with detailed favorite translations
   const favoriteTranslations = favorites.map((trans) => ({
