@@ -168,6 +168,7 @@ router.get("/Home", translateController.userTanslations);
  *         description: Translation not found
  */
 router.get("/favorite/:id", translateController.markAsFavoriteById);
+router.patch("/unfavorite/:id", translateController.unMakrFavoriteById);
 
 /**
  * @swagger

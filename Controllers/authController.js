@@ -55,6 +55,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   )}/api/v1/users/verify-email/${verifyToken}`;
   const email = new Email(newUser.email, newUser.name, verificationURL);
   await email.sendVerificationEmail();
+
   return res.status(200).json({
     status: "success",
     message: "Verification email sent. Please check your inbox.",
@@ -103,7 +104,6 @@ exports.logout = (req, res) => {
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
-  
   const token = req.headers.authorization?.startsWith("Bearer")
     ? req.headers.authorization.split(" ")[1]
     : req.cookies?.jwt;
@@ -342,8 +342,5 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   user.emailVerificationExpires = undefined;
   await user.save({ validateBeforeSave: false });
 
-  res.status(200).json({
-    status: "success",
-    message: "Email verified successfully!",
-  });
+  return res.redirect("https://www.turjuman.online/emailVerified");
 });

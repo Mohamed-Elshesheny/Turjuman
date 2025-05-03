@@ -14,6 +14,7 @@ const {
   userTanslations,
   getFavoritesInOrder,
   markAsFavoriteById,
+  unMakrFavoriteById,
 } = require("./Translate/translationQueries");
 
 // Factory functions 🏭
@@ -27,11 +28,14 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
 
   // Retrieve all saved translations for the logged-in user
-  const savedTrans = await savedtransModel.find({ userId }).sort({ createdAt: -1 });
+  const savedTrans = await savedtransModel
+    .find({ userId })
+    .sort({ createdAt: -1 });
 
   // Format the response to include original text and its translation
   const translations = savedTrans.map((trans) => ({
-    id:trans.id,
+    id: trans.id,
+    isFavorite: trans.isFavorite,
     original: trans.word,
     translation: trans.translation,
     srcLang: trans.srcLang,
@@ -92,6 +96,7 @@ exports.ocrTranslateImage = ocrTranslateImage;
 
 exports.getFavoritesInOrder = getFavoritesInOrder;
 exports.markAsFavoriteById = markAsFavoriteById;
+exports.unMakrFavoriteById = unMakrFavoriteById;
 exports.searchAndFilterTranslations = searchAndFilterTranslations;
 exports.userTanslations = userTanslations;
 

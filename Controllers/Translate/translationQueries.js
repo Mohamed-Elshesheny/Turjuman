@@ -120,3 +120,24 @@ exports.markAsFavoriteById = catchAsync(async (req, res, next) => {
     data: translation,
   });
 });
+
+exports.unMakrFavoriteById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  const translation = await savedtransModel.findOne({ _id: id, userId });
+
+  if (!translation) {
+    return next(
+      new AppError("Translation not found or you don't have permission.", 404)
+    );
+  }
+
+  translation.isFavorite = false;
+  await translation.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Translation unMarked as favorite ✅",
+  });
+});
