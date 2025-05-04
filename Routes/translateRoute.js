@@ -101,6 +101,7 @@ router.post(
 router.use(authController.protect);
 
 router.patch("/level/:id", cardController.ChooseDifficulty);
+router.get('/level/test/:id',cardController.HardTransMode)
 
 /**
  * @swagger

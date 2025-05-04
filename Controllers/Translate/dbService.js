@@ -12,6 +12,7 @@ const findExistingTranslation = async (word, srcLang, targetLang, userId) => {
 const saveTranslation = async ({
   word,
   srcLang,
+  level,
   targetLang,
   translation,
   userId,

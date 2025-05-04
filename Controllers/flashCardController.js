@@ -1,5 +1,6 @@
 const savedTrans = require("../Models/savedtransModel");
 const catchAsync = require("express-async-handler");
+const { random } = require("../utils/geminiRandom");
 const AppError = require("../utils/AppError");
 
 exports.ChooseDifficulty = catchAsync(async (req, res, next) => {
@@ -22,5 +23,29 @@ exports.ChooseDifficulty = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: level === "easy" ? "Translations Deleted" : "Translatsion Kept",
+  });
+});
+
+exports.HardTransMode = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+
+  const translation = await savedTrans.findOne({ userId, _id: id });
+
+  if (!translation) {
+    return next(
+      new AppError("There is no (hard) translation with this ID", 404)
+    );
+  }
+
+  const { word } = translation;
+  const example = await random(word);
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      word,
+      example,
+    },
   });
 });
