@@ -35,6 +35,7 @@ const savedTransSchema = new mongoose.Schema(
     definition: String,
     synonyms_src: [String],
     synonyms_target: [String],
+    Levels: String,
   },
   { timestamps: true }
 );
