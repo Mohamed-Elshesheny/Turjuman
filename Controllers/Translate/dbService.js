@@ -27,6 +27,7 @@ const saveTranslation = async ({
     translation,
     userId,
     isFavorite,
+    level,
     definition,
     synonyms_src,
     synonyms_target,

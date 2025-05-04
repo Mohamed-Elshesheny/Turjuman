@@ -164,6 +164,7 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     success: true,
     data: {
       original: word,
+      level: savedTrans.level,
       translation,
       definition: dictionaryData.definition,
       examples: dictionaryData.examples,

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { type } = require("os");
 
 const savedTransSchema = new mongoose.Schema(
   {
@@ -35,7 +36,10 @@ const savedTransSchema = new mongoose.Schema(
     definition: String,
     synonyms_src: [String],
     synonyms_target: [String],
-    Levels: String,
+    level: {
+      type: String,
+      default: "Medium",
+    },
   },
   { timestamps: true }
 );

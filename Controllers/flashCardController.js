@@ -14,6 +14,9 @@ exports.ChooseDifficulty = catchAsync(async (req, res, next) => {
   }
   if (level === "easy") {
     await savedTrans.deleteOne({ _id: id });
+  } else if (level === "hard") {
+    translation.level = "hard";
+    await translation.save();
   }
 
   res.status(200).json({
