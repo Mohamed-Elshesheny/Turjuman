@@ -127,7 +127,7 @@ app.get("/robots.txt", (req, res) => {
 
 // 📚 Swagger Docs Route
 app.use(
-  "/api/docs",
+  "/docs",
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, { explorer: true })
 );
