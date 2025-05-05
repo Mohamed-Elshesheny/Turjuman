@@ -102,6 +102,7 @@ router.use(authController.protect);
 
 router.patch("/level/:id", cardController.ChooseDifficulty);
 router.get("/level/test/:id", cardController.HardTransMode);
+router.get("/flashcards/generate", cardController.generateFlashcards);
 router.get("/singleTranslation/:id", translateController.GetSingleTranslate);
 
 /**
