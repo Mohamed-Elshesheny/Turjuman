@@ -78,7 +78,7 @@ router.post(
  * /api/v1/translate-image:
  *   post:
  *     summary: Translate text from image
- *     description: Upload an image and translate its content.
+ *     description: Upload an image and translate its content using OCR.
  *     tags:
  *       - Translations
  *     requestBody:
@@ -100,9 +100,102 @@ router.post(
 
 router.use(authController.protect);
 
+
+/**
+ * @swagger
+ * /api/v1/level/{id}:
+ *   patch:
+ *     summary: Choose difficulty level for flashcards
+ *     description: Update the difficulty level for a set of flashcards by ID.
+ *     tags:
+ *       - Flashcards
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The flashcard set ID.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               level:
+ *                 type: string
+ *                 description: Desired difficulty level.
+ *     responses:
+ *       200:
+ *         description: Difficulty level updated
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Flashcard set not found
+ */
 router.patch("/level/:id", cardController.ChooseDifficulty);
+
+/**
+ * @swagger
+ * /api/v1/level/test/{id}:
+ *   get:
+ *     summary: Get hard translation mode for flashcard set
+ *     description: Retrieve hard translation mode information for a flashcard set by ID.
+ *     tags:
+ *       - Flashcards
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The flashcard set ID.
+ *     responses:
+ *       200:
+ *         description: Hard translation mode data
+ *       404:
+ *         description: Flashcard set not found
+ */
 router.get("/level/test/:id", cardController.HardTransMode);
+
+/**
+ * @swagger
+ * /api/v1/flashcards/generate:
+ *   get:
+ *     summary: Generate flashcards
+ *     description: Generate a new set of flashcards for the authenticated user.
+ *     tags:
+ *       - Flashcards
+ *     responses:
+ *       200:
+ *         description: Flashcards generated successfully
+ *       400:
+ *         description: Generation failed
+ */
 router.get("/flashcards/generate", cardController.generateFlashcards);
+
+/**
+ * @swagger
+ * /api/v1/singleTranslation/{id}:
+ *   get:
+ *     summary: Get a single translation by ID
+ *     description: Retrieve a single translation record by its unique ID.
+ *     tags:
+ *       - Translations
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The translation ID.
+ *     responses:
+ *       200:
+ *         description: Translation record retrieved
+ *       404:
+ *         description: Translation not found
+ */
 router.get("/singleTranslation/:id", translateController.GetSingleTranslate);
 
 /**
@@ -174,6 +267,28 @@ router.get("/Home", translateController.userTanslations);
  *         description: Translation not found
  */
 router.get("/favorite/:id", translateController.markAsFavoriteById);
+
+/**
+ * @swagger
+ * /api/v1/unfavorite/{id}:
+ *   patch:
+ *     summary: Unmark translation as favorite
+ *     description: Remove a translation from favorites using its ID.
+ *     tags:
+ *       - Translations
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The translation ID.
+ *     responses:
+ *       200:
+ *         description: Translation unmarked as favorite
+ *       404:
+ *         description: Translation not found
+ */
 router.patch("/unfavorite/:id", translateController.unMakrFavoriteById);
 
 /**
