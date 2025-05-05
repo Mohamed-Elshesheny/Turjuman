@@ -16,6 +16,7 @@ const {
   getFavoritesInOrder,
   markAsFavoriteById,
   unMakrFavoriteById,
+  GetSingleTranslate,
 } = require("./Translate/translationQueries");
 
 // Factory functions 🏭
@@ -28,10 +29,7 @@ exports.checkTranslationLimit = checkTranslationLimit;
 exports.getUserTranslation = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
 
-  const features = new APIfeatures(
-    savedtransModel.find({ userId }),
-    req.query
-  )
+  const features = new APIfeatures(savedtransModel.find({ userId }), req.query)
     .filter()
     .sort()
     .limitFields()
@@ -109,6 +107,7 @@ exports.ocrTranslateImage = ocrTranslateImage;
 exports.getFavoritesInOrder = getFavoritesInOrder;
 exports.markAsFavoriteById = markAsFavoriteById;
 exports.unMakrFavoriteById = unMakrFavoriteById;
+exports.GetSingleTranslate = GetSingleTranslate;
 exports.searchAndFilterTranslations = searchAndFilterTranslations;
 exports.userTanslations = userTanslations;
 

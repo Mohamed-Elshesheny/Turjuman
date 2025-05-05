@@ -141,3 +141,18 @@ exports.unMakrFavoriteById = catchAsync(async (req, res, next) => {
     message: "Translation unMarked as favorite ✅",
   });
 });
+
+exports.GetSingleTranslate = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+
+  const SingleTrans = await savedtransModel.findById({ userId, _id: id });
+  if (!SingleTrans) {
+    return next(new AppError("Can not find this translations", 400));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: SingleTrans,
+  });
+});
