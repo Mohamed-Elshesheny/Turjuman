@@ -84,7 +84,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 🛡 Security Middlewares
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false
+}));
+
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  next();
+});
 app.use(mongoSanitize());
 app.use(xss());
 
