@@ -23,7 +23,7 @@ function issueTokenAndRedirect(req, res, loginMethod) {
 
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"], callbackURL: "https://turjuman.online/auth/google/callback" })
+  passport.authenticate("google", { scope: ["profile", "email"], callbackURL: "https://api.turjuman.online/auth/google/callback" })
 );
 
 router.get("/logout", authController.logout);
@@ -32,7 +32,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     failureRedirect: "/auth/login-failure",
-    callbackURL: "https://turjuman.online/auth/google/callback",
+    callbackURL: "https://api.turjuman.online/auth/google/callback",
   }),
   (req, res) => {
     issueTokenAndRedirect(req, res, "google");
@@ -46,14 +46,14 @@ router.get("/login-failure", (req, res) => {
 // Facebook login
 router.get(
   "/facebook",
-  passport.authenticate("facebook", { scope: ["email"], callbackURL: "https://turjuman.online/auth/facebook/callback" })
+  passport.authenticate("facebook", { scope: ["email"], callbackURL: "https://api.turjuman.online/auth/facebook/callback" })
 );
 
 router.get(
   "/facebook/callback",
   passport.authenticate("facebook", {
     failureRedirect: "/auth/login-failure",
-    callbackURL: "https://turjuman.online/auth/facebook/callback",
+    callbackURL: "https://api.turjuman.online/auth/facebook/callback",
   }),
   (req, res) => {
     issueTokenAndRedirect(req, res, "facebook");
