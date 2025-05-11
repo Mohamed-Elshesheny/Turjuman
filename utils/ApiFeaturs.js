@@ -2,6 +2,7 @@ class APIfeatures {
   constructor(mongoesquery, queryString) {
     this.mongoesquery = mongoesquery;
     this.queryString = queryString;
+    this.totalCount = 0;
   }
 
   filter() {
@@ -12,8 +13,8 @@ class APIfeatures {
     // 1B) advanced filtering
     let queryStr = JSON.stringify(query0bj);
     queryStr = queryStr.replace(/\b(gte|gt|lt|lte)\b/g, (match) => `$${match}`);
-    console.log(JSON.parse(queryStr));
     this.mongoesquery = this.mongoesquery.find(JSON.parse(queryStr)); // mongoesquery is requesting data from data base
+    this.totalCountPromise = this.mongoesquery.clone().countDocuments();
 
     return this;
   }
@@ -22,7 +23,6 @@ class APIfeatures {
     if (this.queryString.sort) {
       // req.mongoesquery بمعني انو طلب.انو يطلب بيانات من قواعد البيانات
       const sortBy = this.queryString.sort.split(",").join(" "); // the split will تفصل كل حاجه ما بينهم ، وي join هتجمع ما بينهم تاني
-      console.log(sortBy);
       this.mongoesquery = this.mongoesquery.sort(sortBy);
     } else {
       this.mongoesquery = this.mongoesquery.sort("-createdAt"); // default sorting
@@ -63,6 +63,13 @@ class APIfeatures {
     this.paginationResult = pagination;
 
     return this;
+  }
+
+  async getTotalCount() {
+    if (this.totalCountPromise) {
+      this.totalCount = await this.totalCountPromise;
+    }
+    return this.totalCount;
   }
 }
 

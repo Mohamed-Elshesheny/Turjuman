@@ -36,6 +36,8 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
     .pagination();
 
   const savedTrans = await features.mongoesquery;
+  const totalCount = await features.getTotalCount();
+
 
   const translations = savedTrans.map((trans) => ({
     id: trans.id,
@@ -52,6 +54,7 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     count: translations.length,
+    totalCount,
     data: translations,
   });
 });
