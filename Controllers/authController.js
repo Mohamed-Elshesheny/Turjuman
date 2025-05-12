@@ -1,4 +1,4 @@
-const redis = require("../utils/redisClient"); // تأكد أنك عامل ملف فيه إعداد redis
+const redis = require("../utils/redisClient"); 
 const User = require("./../Models/userModel");
 const catchAsync = require("express-async-handler");
 const jwt = require("jsonwebtoken");
@@ -7,11 +7,11 @@ const Email = require("../utils/email");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
-// const tokenBlacklist = new Set(); // مكان مؤقت للـ jti
+
 
 const signToken = (id) => {
   const jti = crypto.randomUUID();
-  return jwt.sign({ id, jti }, process.env.JWT_SECRET, {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "6h",
     jwtid: jti,
   });
@@ -138,6 +138,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   const isRevoked = await redis.get(decoded.jti);
+  console.log(decoded.jti);
   if (isRevoked) {
     return next(
       new AppError("This token has been revoked. Please log in again.", 401)
