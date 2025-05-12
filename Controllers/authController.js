@@ -9,9 +9,9 @@ const bcrypt = require("bcrypt");
 
 const signToken = (id) => {
   const jti = crypto.randomUUID();
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  const payload = { id, jti };
+  return jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "6h",
-    jwtid: jti,
   });
 };
 

@@ -34,12 +34,12 @@ exports.uploadUserPhoto = upload.single("photo");
  * Middleware to resize uploaded user photos.
  * Saves the processed image to the filesystem with a unique filename.
  */
-exports.resizeUserPhoto = (req, res, next) => {
+exports.resizeUserPhoto = async (req, res, next) => {
   if (!req.file) return next();
 
   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
 
-  sharp(req.file.buffer)
+  await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat("jpeg")
     .jpeg({ quality: 90 })
@@ -132,7 +132,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
   );
   if (!doc) {
     return next(
-      new AppError(`No Document found with this ID ${req.body.password}`, 404)
+      new AppError(`No Document found with this ID ${req.params.id}`, 404)
     );
   }
   res.status(200).json({
@@ -144,4 +144,4 @@ exports.updateUser = catchAsync(async (req, res, next) => {
 // Generic factory methods for standard CRUD operations
 exports.getAllUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
-exports.deleteMe = factory.deleteOne(User);
+exports.deleteUser = factory.deleteOne(User);
