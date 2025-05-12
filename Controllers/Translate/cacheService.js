@@ -1,9 +1,5 @@
 const redisClient = require("../../utils/redisClient");
 
-/**
- * @class TranslationCache
- * @description Manages tiered caching of translations using Redis (hot, warm, cold).
- */
 class TranslationCache {
   constructor(hotCacheKey, warmCacheKey, coldCacheKey) {
     this.cacheKeys = {
@@ -18,11 +14,6 @@ class TranslationCache {
     };
   }
 
-  /**
-   * Retrieve translation from cache tiers.
-   * @param {string} word
-   * @returns {Promise<object|null>}
-   */
   async getCachedTranslation(word) {
     for (const tier of ["hot", "warm", "cold"]) {
       const key = this.cacheKeys[tier];
@@ -32,12 +23,6 @@ class TranslationCache {
     return null;
   }
 
-  /**
-   * Save translation to all cache tiers.
-   * @param {string} word
-   * @param {object} dictionaryData
-   * @param {object} translationObj
-   */
   async saveToCache(word, dictionaryData, translationObj) {
     const cacheData = JSON.stringify({
       id: translationObj.id,

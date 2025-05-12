@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const AppError = require("../../utils/AppError");
 const TranslationCache = require("./cacheService");
 // Helper: Build cache key dynamically
@@ -131,15 +132,14 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Translation already exists",
-      data: {
-        original: word,
-        translation: existingTranslation.translation,
-        isFavorite: existingTranslation.isFavorite,
-        definition: aiData.definition,
-        examples: aiData.examples,
-        synonyms_src: aiData.synonyms_src,
-        synonyms_target: aiData.synonyms_target,
-      },
+      data: _.pick(existingTranslation, [
+        'word',
+        'translation',
+        'isFavorite',
+        'definition',
+        'synonyms_src',
+        'synonyms_target'
+      ]),
     });
   }
 
@@ -170,7 +170,18 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
       examples: dictionaryData.examples,
       synonyms_src: dictionaryData.synonyms_src,
       synonyms_target: dictionaryData.synonyms_target,
-      savedTranslation: savedTrans,
+      savedTranslation: _.pick(savedTrans, [
+        'id',
+        'word',
+        'translation',
+        'srcLang',
+        'targetLang',
+        'isFavorite',
+        'createdAt',
+        'definition',
+        'synonyms_src',
+        'synonyms_target'
+      ]),
     },
   });
 });

@@ -27,6 +27,10 @@ exports.getTopActiveUsers = catchAsync(async (req, res, next) => {
     {
       $project: {
         count: 1,
+        userId: "$_id",
+        photo: {
+          $ifNull: [{ $arrayElemAt: ["$userDetails.photo", 0] }, null],
+        },
         user: {
           name: {
             $ifNull: [{ $arrayElemAt: ["$userDetails.name", 0] }, "Unknown"],
@@ -55,6 +59,16 @@ exports.getUsageAnalytics = catchAsync(async (req, res, next) => {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0); // Start of today
 
+  const totalUsers = await userModel.countDocuments();
+  const newUsersToday = await userModel.countDocuments({ createdAt: { $gte: todayStart } });
+  const topLanguageAgg = await savedtransModel.aggregate([
+    { $group: { _id: "$srcLang", count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+    { $limit: 1 },
+  ]);
+  const topLanguage = topLanguageAgg[0]?._id || "Unknown";
+  const latestTranslation = await savedtransModel.findOne().sort({ createdAt: -1 });
+
   const dailyTranslations = await savedtransModel.countDocuments({
     createdAt: { $gte: todayStart },
   });
@@ -65,6 +79,10 @@ exports.getUsageAnalytics = catchAsync(async (req, res, next) => {
       totalTranslations,
       activeUsers,
       dailyTranslations,
+      totalUsers,
+      newUsersToday,
+      topLanguage,
+      lastTranslationAt: latestTranslation?.createdAt,
     },
   });
 });

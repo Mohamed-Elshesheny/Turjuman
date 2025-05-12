@@ -1,4 +1,4 @@
-const redis = require("../utils/redisClient"); 
+const redis = require("../utils/redisClient");
 const User = require("./../Models/userModel");
 const catchAsync = require("express-async-handler");
 const jwt = require("jsonwebtoken");
@@ -6,8 +6,6 @@ const AppError = require("../utils/AppError");
 const Email = require("../utils/email");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
-
-
 
 const signToken = (id) => {
   const jti = crypto.randomUUID();
