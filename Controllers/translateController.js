@@ -38,7 +38,6 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
   const savedTrans = await features.mongoesquery;
   const totalCount = await features.getTotalCount();
 
-
   const translations = savedTrans.map((trans) => ({
     id: trans.id,
     isFavorite: trans.isFavorite,
@@ -74,6 +73,7 @@ exports.getFavorites = catchAsync(async (req, res, next) => {
     .pagination();
 
   const favorites = await features.mongoesquery;
+  const totalCount = await features.getTotalCount();
 
   // Format the response with detailed favorite translations
   const favoriteTranslations = favorites.map((trans) => ({
@@ -93,6 +93,7 @@ exports.getFavorites = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     count: favoriteTranslations.length,
+    totalCount,
     data: favoriteTranslations,
   });
 });

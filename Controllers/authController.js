@@ -1,3 +1,4 @@
+const redis = require("../utils/redisClient"); // تأكد أنك عامل ملف فيه إعداد redis
 const User = require("./../Models/userModel");
 const catchAsync = require("express-async-handler");
 const jwt = require("jsonwebtoken");
@@ -6,9 +7,13 @@ const Email = require("../utils/email");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
+// const tokenBlacklist = new Set(); // مكان مؤقت للـ jti
+
 const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+  const jti = crypto.randomUUID();
+  return jwt.sign({ id, jti }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || "6h",
+    jwtid: jti,
   });
 };
 
@@ -97,6 +102,12 @@ exports.logout = (req, res) => {
     domain: ".turjuman.online",
   });
 
+  const token = req.cookies.jwt;
+  if (token) {
+    const decoded = jwt.decode(token);
+    redis.set(decoded.jti, "revoked", "EX", 60 * 60 * 6); // احفظ jti في Redis لمدة 6 ساعات
+  }
+
   res.status(200).json({
     status: "success",
     message: "Logged out successfully and cookie cleared!",
@@ -123,6 +134,13 @@ exports.protect = catchAsync(async (req, res, next) => {
     console.error("JWT verify error:", err);
     return next(
       new AppError("Invalid or expired token! Please log in again.", 401)
+    );
+  }
+
+  const isRevoked = await redis.get(decoded.jti);
+  if (isRevoked) {
+    return next(
+      new AppError("This token has been revoked. Please log in again.", 401)
     );
   }
 
