@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const APIfeatures = require("../utils/ApiFeaturs");
 const catchAsync = require("express-async-handler");
 
@@ -39,21 +38,17 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
   const savedTrans = await features.mongoesquery;
   const totalCount = await features.getTotalCount();
 
-  const translations = savedTrans.map((trans) =>
-    _.pick(trans, [
-      'id',
-      'word',
-      'translation',
-      'srcLang',
-      'targetLang',
-      'isFavorite',
-      'createdAt',
-      'definition',
-      'synonyms_src',
-      'synonyms_target',
-      'examples'
-    ])
-  );
+  const translations = savedTrans.map((trans) => ({
+    id: trans.id,
+    isFavorite: trans.isFavorite,
+    original: trans.word,
+    translation: trans.translation,
+    srcLang: trans.srcLang,
+    targetLang: trans.targetLang,
+    definition: trans.definition,
+    synonyms_src: trans.synonyms_src,
+    synonyms_target: trans.synonyms_target,
+  }));
 
   res.status(200).json({
     status: "success",
@@ -80,22 +75,20 @@ exports.getFavorites = catchAsync(async (req, res, next) => {
   const favorites = await features.mongoesquery;
   const totalCount = await features.getTotalCount();
 
-  // Format the response with detailed favorite translations using _.pick
-  const favoriteTranslations = favorites.map((trans) =>
-    _.pick(trans, [
-      'id',
-      'word',
-      'translation',
-      'srcLang',
-      'targetLang',
-      'isFavorite',
-      'createdAt',
-      'definition',
-      'synonyms_src',
-      'synonyms_target',
-      'examples'
-    ])
-  );
+  // Format the response with detailed favorite translations
+  const favoriteTranslations = favorites.map((trans) => ({
+    id: trans.id,
+    original: trans.word,
+    translation: trans.translation,
+    srcLang: trans.srcLang,
+    targetLang: trans.targetLang,
+    isFavorite: trans.isFavorite,
+    createdAt: trans.createdAt,
+    definition: trans.definition,
+    synonyms_src: trans.synonyms_src,
+    synonyms_target: trans.synonyms_target,
+    examples: trans.examples,
+  }));
 
   res.status(200).json({
     status: "success",

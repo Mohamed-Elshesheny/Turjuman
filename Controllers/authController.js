@@ -1,4 +1,4 @@
-const redis = require("../utils/redisClient");
+const redis = require("../utils/redisClient"); 
 const User = require("./../Models/userModel");
 const catchAsync = require("express-async-handler");
 const jwt = require("jsonwebtoken");
@@ -7,11 +7,13 @@ const Email = require("../utils/email");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
+
+
 const signToken = (id) => {
   const jti = crypto.randomUUID();
-  const payload = { id, jti };
-  return jwt.sign(payload, process.env.JWT_SECRET, {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "6h",
+    jwtid: jti,
   });
 };
 
