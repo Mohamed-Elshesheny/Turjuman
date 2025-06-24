@@ -3,10 +3,10 @@ const cloudinary = require("cloudinary").v2;
 
 // Initialize Gemini API with your key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 cloudinary.config({
-  secure: true, 
+  secure: true,
   url: process.env.CLOUDINARY_URL,
 });
 

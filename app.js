@@ -76,9 +76,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 🛡 Security Middlewares
-app.use(helmet({
-  contentSecurityPolicy: false
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
