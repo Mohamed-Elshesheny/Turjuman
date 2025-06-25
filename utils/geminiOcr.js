@@ -43,7 +43,7 @@ async function extractTextWithGemini(imagePathOrUrl) {
     base64Image = imageBuffer.toString("base64");
   }
 
-  const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = gemini.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const result = await model.generateContent([
     { inlineData: { mimeType: "image/jpeg", data: base64Image } },
