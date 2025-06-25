@@ -4,6 +4,7 @@ const { random } = require("../utils/geminiRandom");
 const AppError = require("../utils/AppError");
 const FlashCard = require("../Models/flashCardModel");
 const { generateFlashcardsFromAI } = require("../utils/geminiGenerate");
+const APIfeatures = require("../utils/ApiFeaturs");
 
 exports.ChooseDifficulty = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
@@ -41,13 +42,18 @@ exports.HardTransMode = catchAsync(async (req, res, next) => {
   }
 
   const { word } = translation;
-  const example = await random(word);
+  const { example, examples, definition, synonymsSrc, synonymsTarget } =
+    await random(word);
 
   res.status(200).json({
     status: "success",
     data: {
       word,
       example,
+      examples,
+      definition,
+      synonymsSrc,
+      synonymsTarget,
     },
   });
 });
@@ -55,15 +61,12 @@ exports.HardTransMode = catchAsync(async (req, res, next) => {
 exports.generateFlashcards = async (req, res, next) => {
   const userId = req.user.id;
 
-  //1) Get Translation That User Translate
   const translations = await savedTrans.find({ userId });
   const words = translations.map((t) => t.word);
 
-  //2) To Confirm That Translartion not repeated again
   const existingFlashcards = await FlashCard.find({ userId });
   const existingWords = new Set(existingFlashcards.map((f) => f.word));
 
-  //3) Added The Words in FlashCard
   const newUserWords = [];
   const newFlashCards = [];
 
@@ -85,8 +88,7 @@ exports.generateFlashcards = async (req, res, next) => {
   }
 
   if (newUserWords.length > 0) {
-    //4) After Generate 5 words ... Every word that added in FlashCard,Ai generate 3 Words about this word
-    const aiGenerated = await generateFlashcardsFromAI(newUserWords, 3);
+    const aiGenerated = await generateFlashcardsFromAI(newUserWords);
 
     for (const item of aiGenerated) {
       if (!existingWords.has(item.word)) {
@@ -97,6 +99,10 @@ exports.generateFlashcards = async (req, res, next) => {
           srcLang: item.srcLang,
           targetLang: item.targetLang,
           source: "ai",
+          definition: item.definition,
+          examples: item.examples,
+          synonymsSrc: item.synonymsSrc,
+          synonymsTarget: item.synonymsTarget,
         });
         newFlashCards.push(flashcard);
         existingWords.add(item.word);
@@ -104,17 +110,42 @@ exports.generateFlashcards = async (req, res, next) => {
     }
   }
 
-  // 5) All Words have the Level that populate from SavedTranslarteSchema
-  const allFlashcards = await FlashCard.find({ userId }).populate({
+  // 🧠 Step: Apply filtering, sorting, pagination using APIfeatures
+  const features = new APIfeatures(
+    FlashCard.find({ userId }).select(
+      "word translation srcLang targetLang source definition examples synonymsSrc synonymsTarget translateId"
+    ),
+    req.query
+  )
+    .filter()
+    .sort()
+    .limitFields()
+    .pagination();
+
+  const allFlashcards = await features.mongoesquery.populate({
     path: "translateId",
     select: "level",
   });
+
+  const total = await features.getTotalCount();
 
   res.status(200).json({
     status: "success",
     message: "Flashcards generated successfully ✅",
     added: newFlashCards.length,
-    total: allFlashcards.length,
-    flashcards: allFlashcards,
+    total,
+    pagination: features.paginationResult,
+    flashcards: allFlashcards.map((card) => ({
+      word: card.word,
+      translation: card.translation,
+      level: card.translateId?.level || null,
+      srcLang: card.srcLang,
+      targetLang: card.targetLang,
+      source: card.source,
+      definition: card.definition,
+      examples: card.examples,
+      synonymsSrc: card.synonymsSrc,
+      synonymsTarget: card.synonymsTarget,
+    })),
   });
 };

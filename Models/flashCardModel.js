@@ -32,6 +32,21 @@ const flashcardSchema = new mongoose.Schema({
     enum: ["user", "ai"],
     default: "user",
   },
+  definition: {
+    type: String,
+  },
+  examples: {
+    type: [String],
+    default: [],
+  },
+  synonymsSrc: {
+    type: [String],
+    default: [],
+  },
+  synonymsTarget: {
+    type: [String],
+    default: [],
+  },
   createdAt: {
     type: Date,
     default: Date.now,
