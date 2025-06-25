@@ -44,7 +44,7 @@ exports.HardTransMode = catchAsync(async (req, res, next) => {
   const { word } = translation;
   const { example, examples, definition, synonymsSrc, synonymsTarget } =
     await random(word);
-// test
+  // test
   res.status(200).json({
     status: "success",
     data: {
@@ -80,7 +80,20 @@ exports.generateFlashcards = async (req, res, next) => {
         srcLang: item.srcLang,
         targetLang: item.targetLang,
         translateId: item._id,
+
+        // ✅ بيانات إضافية من الترجمة الأصلية
+        definition: item.definition || "No definition provided.",
+        examples: item.examples?.length
+          ? item.examples
+          : ["No examples available."],
+        synonymsSrc: item.synonyms_src?.length
+          ? item.synonyms_src
+          : ["No synonyms"],
+        synonymsTarget: item.synonyms_target?.length
+          ? item.synonyms_target
+          : ["لا يوجد مرادفات"],
       });
+
       newFlashCards.push(flashcard);
       newUserWords.push(item.word);
       existingWords.add(item.word);

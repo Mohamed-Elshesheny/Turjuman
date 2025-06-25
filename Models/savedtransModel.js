@@ -40,6 +40,10 @@ const savedTransSchema = new mongoose.Schema(
       type: String,
       default: "Medium",
     },
+    examples: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

@@ -9,7 +9,7 @@ You are a smart flashcard generator.
 
 Given the following English words: [${wordsArray.join(", ")}]
 
-Generate a related English word for each of them, and for each word return a complete flashcard object using this **exact** JSON format:
+Generate a related English word for each of them, and for each word return a complete flashcard object using this exact JSON format:
 
 [
   {
@@ -22,7 +22,7 @@ Generate a related English word for each of them, and for each word return a com
   }
 ]
 
-⚠️ Rules:
+Rules:
 - Return ONLY valid JSON — no text, no explanation, no markdown.
 - The "examples" array must contain **3 short, useful English sentences** using the word naturally.
 - "definition" must be 1-2 lines, simple English.
@@ -35,11 +35,11 @@ Generate a related English word for each of them, and for each word return a com
     const response = result.response;
     const text = await response.text();
 
-    // 🔍 استخلاص الـ JSON فقط حتى لو Gemini زود كلام حوالين
-    const match = text.match(/\[.*\]/s); // match any array inside []
-    if (!match) throw new Error("JSON array not found in Gemini response.");
+    const start = text.indexOf("[");
+    const end = text.lastIndexOf("]");
+    if (start === -1 || end === -1) throw new Error("JSON array not found");
 
-    const jsonString = match[0];
+    const jsonString = text.slice(start, end + 1);
     return JSON.parse(jsonString);
   } catch (error) {
     console.error("❌ Gemini generation error:", error.message);
