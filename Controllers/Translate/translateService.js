@@ -1,12 +1,13 @@
 const AppError = require("../../utils/AppError");
 const TranslationCache = require("./cacheService");
-// Helper: Build cache key dynamically
-const buildCacheKey = (tier, word, srcLang, targetLang) =>
-  `${tier}cache:translation:${word}:${srcLang}:${targetLang}`;
 const { checkGuestLimit } = require("./translationLimiter");
 const catchAsync = require("express-async-handler");
 const { findExistingTranslation, saveTranslation } = require("./dbService");
 const gemineiTranslate = require("../../utils/geminiTranslate");
+
+// Helper: Build cache key dynamically
+const buildCacheKey = (tier, word, srcLang, targetLang) =>
+  `${tier}cache:translation:${word}:${srcLang}:${targetLang}`;
 
 // Helper: Validate required translation inputs 🚦
 const validateTranslationInput = (word, srcLang, targetLang, next) => {
@@ -45,9 +46,13 @@ const handleTranslationError = (translationData, res) => {
 const isSingleWord = (word) => word.trim().split(/\s+/).length === 1;
 
 // Helper: Build dictionary data 📚
-const buildDictionaryData = (translationData) => ({
+const buildDictionaryData = (translationData, fallbackExamples) => ({
   definition: translationData.definition,
-  examples: translationData.examples,
+  examples:
+    Array.isArray(translationData.examples) &&
+    translationData.examples.length > 0
+      ? translationData.examples
+      : fallbackExamples,
   synonyms_src: translationData.synonyms_src,
   synonyms_target: translationData.synonyms_target,
 });
@@ -67,7 +72,6 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   );
 
   const cachedTranslation = await cacheManager.getCachedTranslation(word);
-
   if (cachedTranslation) {
     return res.status(200).json({
       success: true,
@@ -93,10 +97,17 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   const translation = translationData.translation;
   const userId = req.user ? req.user.id : null;
 
+  const fallbackExamples = [
+    `Try using "${word}" in a sentence.`,
+    `"${word}" can have different meanings depending on context.`,
+    `Learn how to say "${word}" in different situations.`,
+  ];
+
   if (!userId) {
     const limitResult = checkGuestLimit(req, word, translation);
     return res.status(limitResult.response.status).json(limitResult.response);
   }
+
   if (!isSingleWord(word)) {
     return res.status(200).json({
       success: true,
@@ -115,19 +126,9 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     userId
   );
 
+  const dictionaryData = buildDictionaryData(translationData, fallbackExamples);
+
   if (existingTranslation) {
-    const aiData = translationData;
-
-    if (!aiData.success) {
-      return res.status(200).json({
-        success: false,
-        message: aiData.error || "Can't find a proper translation",
-      });
-    }
-
-    console.log(
-      `[Translation] User ${userId} translated "${word}" → "${existingTranslation.translation}" (existing)`
-    );
     return res.status(200).json({
       success: true,
       message: "Translation already exists",
@@ -135,10 +136,10 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
         original: word,
         translation: existingTranslation.translation,
         isFavorite: existingTranslation.isFavorite,
-        definition: aiData.definition,
-        examples: aiData.examples,
-        synonyms_src: aiData.synonyms_src,
-        synonyms_target: aiData.synonyms_target,
+        definition: dictionaryData.definition,
+        examples: dictionaryData.examples,
+        synonyms_src: dictionaryData.synonyms_src,
+        synonyms_target: dictionaryData.synonyms_target,
       },
     });
   }
@@ -150,12 +151,11 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     translation,
     userId,
     isFavorite,
-    definition: translationData.definition,
-    synonyms_src: translationData.synonyms_src,
-    synonyms_target: translationData.synonyms_target,
+    examples: dictionaryData.examples,
+    definition: dictionaryData.definition,
+    synonyms_src: dictionaryData.synonyms_src,
+    synonyms_target: dictionaryData.synonyms_target,
   });
-
-  const dictionaryData = buildDictionaryData(translationData);
 
   await cacheManager.saveToCache(word, dictionaryData, savedTrans);
   console.log(`[CACHE MISS] Saved "${word}" → "${translation}" to cache`);

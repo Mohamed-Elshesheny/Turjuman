@@ -18,6 +18,7 @@ const saveTranslation = async ({
   userId,
   isFavorite,
   definition,
+  examples, // ✅ أضفنا ده هنا
   synonyms_src,
   synonyms_target,
 }) => {
@@ -30,6 +31,7 @@ const saveTranslation = async ({
     isFavorite,
     level,
     definition,
+    examples, // ✅ وأضفناها كمان هنا
     synonyms_src,
     synonyms_target,
   });

@@ -48,6 +48,7 @@ exports.getUserTranslation = catchAsync(async (req, res, next) => {
     definition: trans.definition,
     synonyms_src: trans.synonyms_src,
     synonyms_target: trans.synonyms_target,
+    examples: trans.examples, // ✅ ضفناها هنا
   }));
 
   res.status(200).json({
