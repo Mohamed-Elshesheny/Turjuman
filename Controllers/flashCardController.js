@@ -44,7 +44,7 @@ exports.HardTransMode = catchAsync(async (req, res, next) => {
   const { word } = translation;
   const { example, examples, definition, synonymsSrc, synonymsTarget } =
     await random(word);
-
+// test
   res.status(200).json({
     status: "success",
     data: {
