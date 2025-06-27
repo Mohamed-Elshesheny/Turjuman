@@ -1,4 +1,4 @@
-const redis = require("../utils/redisClient"); 
+const redis = require("../utils/redisClient");
 const User = require("./../Models/userModel");
 const catchAsync = require("express-async-handler");
 const jwt = require("jsonwebtoken");
@@ -6,8 +6,6 @@ const AppError = require("../utils/AppError");
 const Email = require("../utils/email");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
-
-
 
 const signToken = (id) => {
   const jti = crypto.randomUUID();
@@ -272,9 +270,18 @@ exports.forgotPassword = async (req, res, next) => {
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetURL = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/users/resetPassword/${resetToken}`;
+  // const resetURL = `${req.protocol}://${req.get(
+  //   "host"
+  // )}/api/v1/users/resetPassword/${resetToken}`;
+  let resetURL;
+
+  if (process.env.NODE_ENV === "production") {
+    resetURL = `https://www.turjuman.online/api/v1/users/resetPassword/${resetToken}`;
+  } else {
+    resetURL = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/users/resetPassword/${resetToken}`;
+  }
 
   try {
     const email = new Email(user, resetURL);
