@@ -1,4 +1,4 @@
-const extractAndTranslate = require("./../../utils/geminiOcr");
+const extractAndTranslate = require("../../utils/OcrModel");
 const catchAsync = require("express-async-handler");
 
 exports.ocrTranslateImage = catchAsync(async (req, res, next) => {

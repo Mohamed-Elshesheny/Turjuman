@@ -2,7 +2,7 @@ const cloudinary = require("./Cloudinary");
 const axios = require("axios");
 require("dotenv").config(); // Load environment variables
 const { createClient } = require("@deepgram/sdk");
-const gemineiTranslate = require("./geminiTranslate");
+const gemineiTranslate = require("./TranslateModel");
 
 // Deepgram API Key 🔑 from .env
 const deepgram = createClient(process.env.VOICE_AI_KEY);
