@@ -273,10 +273,11 @@ exports.forgotPassword = async (req, res, next) => {
   // const resetURL = `${req.protocol}://${req.get(
   //   "host"
   // )}/api/v1/users/resetPassword/${resetToken}`;
+  console.log("NODE_ENV:", process.env.NODE_ENV);
   let resetURL;
 
   if (process.env.NODE_ENV === "production") {
-    resetURL = `https://www.turjuman.online/api/v1/users/resetPassword/${resetToken}`;
+    resetURL = `https://www.turjuman.online/resetPassword/${resetToken}`;
   } else {
     resetURL = `${req.protocol}://${req.get(
       "host"
