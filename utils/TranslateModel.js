@@ -124,7 +124,9 @@ async function translateWordExternally(
 
     const examples = Array.isArray(result.examples)
       ? result.examples
-      : (result.example_usage ? [result.example_usage] : []);
+      : result.example_usage
+        ? [result.example_usage]
+        : [];
 
     if (
       !result.translated_word ||

@@ -18,7 +18,7 @@ const saveTranslation = async ({
   userId,
   isFavorite,
   definition,
-  examples, // ✅ أضفنا ده هنا
+  examples,
   synonyms_src,
   synonyms_target,
 }) => {
