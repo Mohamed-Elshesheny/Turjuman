@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "/.well-known/assetlinks.json",
+      "dest": "/public/.well-known/assetlinks.json"
+    },
+    {
       "src": "/(.*)",
       "dest": "index.js",
       "headers": {
