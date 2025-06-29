@@ -2,6 +2,8 @@
  * User Controller - Handles user-related operations such as profile updates, photo uploads,
  * and account deactivation. Integrates with Multer for file handling and Sharp for image processing.
  */
+const cloudinary = require('../utils/Cloudinary')
+const streamifier = require("streamifier");
 const User = require("../Models/userModel");
 const catchAsync = require("express-async-handler");
 const AppError = require("./../utils/AppError");
@@ -31,19 +33,38 @@ const upload = multer({
 exports.uploadUserPhoto = upload.single("photo");
 
 /**
- * Middleware to resize uploaded user photos.
- * Saves the processed image to the filesystem with a unique filename.
+ * Middleware to resize uploaded user photos and upload to Cloudinary.
  */
 exports.resizeUserPhoto = async (req, res, next) => {
   if (!req.file) return next();
 
-  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
-
-  await sharp(req.file.buffer)
+  const buffer = await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat("jpeg")
     .jpeg({ quality: 90 })
-    .toFile(`Public/Images/Users/${req.file.filename}`);
+    .toBuffer();
+
+  const uploadFromBuffer = () =>
+    new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "users",
+          public_id: `user-${req.user.id}-${Date.now()}`,
+        },
+        (error, result) => {
+          if (result) {
+            resolve(result);
+          } else {
+            reject(error);
+          }
+        }
+      );
+      streamifier.createReadStream(buffer).pipe(stream);
+    });
+
+  const result = await uploadFromBuffer();
+
+  req.file.filename = result.secure_url;
 
   next();
 };

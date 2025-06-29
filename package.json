@@ -53,6 +53,7 @@
     "promisify": "^0.0.3",
     "redis": "^4.7.0",
     "sharp": "^0.33.5",
+    "streamifier": "^0.1.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "tesseract.js": "^6.0.1",
