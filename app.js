@@ -27,6 +27,7 @@ require("./utils/ passport");
 
 // 🚀 Express App Initialization
 const app = express();
+app.use(express.static("public"));
 
 // 🗂 Serve Static Files
 app.use(
