@@ -104,6 +104,11 @@ app.get("/", (req, res) => {
   res.send("Welcome to Turjuman API [Beta]");
 });
 
+app.get("/.well-known/assetlinks.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.sendFile(path.join(__dirname, "public/.well-known/assetlinks.json"));
+});
+
 // 🛣 Mounted Routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/", translateRouter);
