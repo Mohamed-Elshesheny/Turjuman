@@ -193,15 +193,27 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
 
   const cachedTranslation = await cacheManager.getCachedTranslation(word);
   if (cachedTranslation) {
+    const translation = cachedTranslation.translation || cachedTranslation.translated_word || "";
+    const definition = cachedTranslation.definition || "";
+    const examples = Array.isArray(cachedTranslation.examples) && cachedTranslation.examples.length > 0
+      ? cachedTranslation.examples
+      : cachedTranslation.example_usage
+        ? [cachedTranslation.example_usage]
+        : [];
+    const synonyms_src = cachedTranslation.synonyms_src || cachedTranslation.source_synonyms || cachedTranslation.synonymsSrc || [];
+    const synonyms_target = cachedTranslation.synonyms_target || cachedTranslation.target_synonyms || cachedTranslation.synonymsTarget || [];
+
     return res.status(200).json({
       success: true,
-      word: cachedTranslation.word,
-      translated_word: cachedTranslation.translation,
-      definition: cachedTranslation.definition,
-      examples: cachedTranslation.examples,
-      synonymsSrc: cachedTranslation.synonymsSrc,
-      synonymsTarget: cachedTranslation.synonymsTarget,
-      source: cachedTranslation.source || "cache",
+      data: {
+        original: word,
+        translation,
+        definition,
+        examples,
+        synonyms_src,
+        synonyms_target,
+        isFavorite,
+      },
     });
   }
 
@@ -219,7 +231,16 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     });
   }
 
-  const translation = translationData.translation;
+  const translation = translationData.translation || translationData.translated_word || "";
+  const definition = translationData.definition || "";
+  const examples = Array.isArray(translationData.examples) && translationData.examples.length > 0
+    ? translationData.examples
+    : translationData.example_usage
+      ? [translationData.example_usage]
+      : [];
+  const synonyms_src = translationData.synonyms_src || translationData.source_synonyms || [];
+  const synonyms_target = translationData.synonyms_target || translationData.target_synonyms || [];
+
   const userId = req.user ? req.user.id : null;
 
   const fallbackExamples = [
@@ -236,16 +257,16 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
   if (!isSingleWord(word)) {
     return res.status(200).json({
       success: true,
-      word,
-      translated_word: translation,
-      definition: translationData.definition,
-      examples:
-        translationData.examples.length > 0
-          ? translationData.examples
-          : fallbackExamples,
-      synonymsSrc: translationData.synonymsSrc || [],
-      synonymsTarget: translationData.synonymsTarget || [],
-      message: "Translation completed (not saved - full sentence)",
+      data: {
+        original: word,
+        translation,
+        definition,
+        examples: examples.length > 0 ? examples : fallbackExamples,
+        synonyms_src,
+        synonyms_target,
+        isFavorite,
+        message: "Translation completed (not saved - full sentence)",
+      },
     });
   }
 
@@ -256,25 +277,19 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     userId
   );
 
-  // ✅ We use the data directly instead of `buildDictionaryData` to match names
-  const definition = translationData.definition;
-  const examples =
-    translationData.examples && translationData.examples.length > 0
-      ? translationData.examples
-      : fallbackExamples;
-  const synonymsSrc = translationData.synonymsSrc || [];
-  const synonymsTarget = translationData.synonymsTarget || [];
-
   if (existingTranslation) {
     return res.status(200).json({
       success: true,
       message: "Translation already exists",
-      word,
-      translated_word: existingTranslation.translation,
-      definition,
-      examples,
-      synonymsSrc,
-      synonymsTarget,
+      data: {
+        original: word,
+        translation: existingTranslation.translation,
+        definition,
+        examples,
+        synonyms_src,
+        synonyms_target,
+        isFavorite: existingTranslation.isFavorite,
+      },
     });
   }
 
@@ -287,8 +302,8 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     isFavorite,
     examples,
     definition,
-    synonyms_src: synonymsSrc, // saving in DB? keep snake_case if needed
-    synonyms_target: synonymsTarget,
+    synonyms_src,
+    synonyms_target,
   });
 
   await cacheManager.saveToCache(
@@ -296,8 +311,8 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
     {
       definition,
       examples,
-      synonymsSrc,
-      synonymsTarget,
+      synonyms_src,
+      synonyms_target,
     },
     savedTrans
   );
@@ -306,12 +321,15 @@ exports.translateAndSave = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
-    word,
-    translated_word: translation,
-    definition,
-    examples,
-    synonymsSrc,
-    synonymsTarget,
-    savedTranslation: savedTrans,
+    data: {
+      original: word,
+      translation,
+      definition,
+      examples,
+      synonyms_src,
+      synonyms_target,
+      isFavorite,
+      savedTranslation: savedTrans,
+    },
   });
 });

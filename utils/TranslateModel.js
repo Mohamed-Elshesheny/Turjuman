@@ -115,10 +115,8 @@ async function translateWordExternally(
 
     const data = res.data;
     if (data.status === "Error") {
-      console.error("🛑 Translation API error:", data.message);
       throw new Error(`Translation failed: ${data.message}`);
     }
-    console.log("🔍 Raw response:", data);
 
     const result = data.success === false && data.details ? data.details : data;
 
@@ -128,22 +126,20 @@ async function translateWordExternally(
         ? [result.example_usage]
         : [];
 
-    if (
-      !result.translated_word ||
-      !result.definition ||
-      examples.length === 0
-    ) {
+    const translation = result.translation || result.translated_word || "";
+    const definition = result.definition || "";
+    if (!translation || !definition || examples.length === 0) {
       console.log("⚠️ Incomplete result:", result);
       throw new Error("Translation failed - missing fields");
     }
 
     return {
-      word: result.word || word,
-      translation: result.translated_word,
-      definition: result.definition,
-      examples: examples,
-      synonymsSrc: result.synonymsSrc || result.source_synonyms || [],
-      synonymsTarget: result.synonymsTarget || result.target_synonyms || [],
+      original: result.word || word,
+      translation,
+      definition,
+      examples,
+      synonyms_src: result.synonyms_src || result.source_synonyms || [],
+      synonyms_target: result.synonyms_target || result.target_synonyms || [],
     };
   } catch (err) {
     console.error("❌ Final catch error:", err.message);
