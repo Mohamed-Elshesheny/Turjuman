@@ -120,14 +120,19 @@ async function translateWordExternally(
 
     const result = data.success === false && data.details ? data.details : data;
 
-    const examples = Array.isArray(result.examples)
+    const examplesRaw = Array.isArray(result.examples)
       ? result.examples
       : result.example_usage
         ? [result.example_usage]
         : [];
 
+    const examples = Array.isArray(examplesRaw[0])
+      ? examplesRaw[0]
+      : examplesRaw;
+
     const translation = result.translation || result.translated_word || "";
     const definition = result.definition || "";
+
     if (!translation || !definition || examples.length === 0) {
       console.log("⚠️ Incomplete result:", result);
       throw new Error("Translation failed - missing fields");
