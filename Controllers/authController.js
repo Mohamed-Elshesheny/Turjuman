@@ -78,7 +78,7 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Invalid email or password", 401));
   }
 
-  if (!user.isEmailVerified) {
+  if (!user.isEmailVerified && user.loginMethod === "local") {
     return next(
       new AppError("Please verify your email before logging in.", 401)
     );
