@@ -56,15 +56,15 @@ module.exports = class Email {
     });
   }
 
-  async sendWelcome() {
-    this.setSender("info");
-    await this.send("d-3f1136812d5d4f5aac4322f05a8a89d8", {
-      first_name: this.firstName,
-      url: this.url,
-      unsubscribe: `https://turjuman.online/unsubscribe?email=${this.to}`,
-      unsubscribe_preferences: "https://turjuman.online/preferences",
-    });
-  }
+  // async sendWelcome() {
+  //   this.setSender("info");
+  //   await this.send("d-3f1136812d5d4f5aac4322f05a8a89d8", {
+  //     first_name: this.firstName,
+  //     url: this.url,
+  //     unsubscribe: `https://turjuman.online/unsubscribe?email=${this.to}`,
+  //     unsubscribe_preferences: "https://turjuman.online/preferences",
+  //   });
+  // }
 
   async sendInvoice(items) {
     this.setSender("billing");
