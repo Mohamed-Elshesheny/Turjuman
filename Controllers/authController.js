@@ -48,16 +48,20 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     isPremium: req.body.isPremium,
     role: req.body.role,
+    isEmailVerified: req.body.loginMethod && ["google", "facebook"].includes(req.body.loginMethod) ? true : false,
+    loginMethod: req.body.loginMethod || "local",
   });
 
-  const verifyToken = newUser.createEmailVerifyToken();
-  await newUser.save({ validateBeforeSave: false });
+  if (!newUser.isEmailVerified) {
+    const verifyToken = newUser.createEmailVerifyToken();
+    await newUser.save({ validateBeforeSave: false });
 
-  const verificationURL = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/users/verify-email/${verifyToken}`;
-  const email = new Email(newUser.email, newUser.name, verificationURL);
-  await email.sendVerificationEmail();
+    const verificationURL = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/users/verify-email/${verifyToken}`;
+    const email = new Email(newUser.email, newUser.name, verificationURL);
+    await email.sendVerificationEmail();
+  }
 
   return res.status(200).json({
     status: "success",
