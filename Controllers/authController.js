@@ -88,10 +88,6 @@ exports.login = catchAsync(async (req, res, next) => {
     );
   }
 
-  if (["google", "facebook"].includes(user.loginMethod)) {
-    user.isEmailVerified = true;
-    await user.save({ validateModifiedOnly: true });
-  }
 
   if (user) {
     user.isActive = true;

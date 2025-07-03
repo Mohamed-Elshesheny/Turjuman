@@ -31,6 +31,7 @@ passport.use(
             email: profile.emails[0].value,
             photo: profile.photos[0].value,
             loginMethod: "google",
+            isEmailVerified: true,
           });
           const emailer = new Email(user.email, user.name, "https://turjuman.online");
           await emailer.sendWelcome();
@@ -73,6 +74,7 @@ passport.use(
             email: profile.emails?.[0]?.value || null,
             photo: profile.photos?.[0]?.value || null,
             loginMethod: "facebook",
+            isEmailVerified: true,
           });
           const emailer = new Email(user.email, user.name, "https://turjuman.online");
           await emailer.sendWelcome();
