@@ -108,7 +108,12 @@ exports.logout = (req, res) => {
   const token = req.cookies.jwt;
   if (token) {
     const decoded = jwt.decode(token);
-    redis.set(decoded.jti, "revoked", "EX", 60 * 60 * 6); // احفظ jti في Redis لمدة 6 ساعات
+
+    if (decoded && decoded.jti) {
+      redis.set(decoded.jti, "revoked", "EX", 60 * 60 * 6);
+    } else {
+      console.warn("JWT decode failed or jti is missing");
+    }
   }
 
   res.status(200).json({
@@ -140,8 +145,12 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  const isRevoked = await redis.get(decoded.jti);
-  console.log(decoded.jti);
+  if (!decoded.jti) {
+    console.warn("No jti found in decoded token");
+  }
+
+  const isRevoked = decoded.jti ? await redis.get(decoded.jti) : null;
+
   if (isRevoked) {
     return next(
       new AppError("This token has been revoked. Please log in again.", 401)
