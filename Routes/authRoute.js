@@ -18,7 +18,7 @@ function issueTokenAndRedirect(req, res, loginMethod) {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.redirect(`https://turjuman.online/auth/callback?token=${token}`);
+  res.redirect(`https://turjuman.online/`);
 }
 
 router.get(
