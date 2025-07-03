@@ -11,14 +11,8 @@ function issueTokenAndRedirect(req, res, loginMethod) {
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
 
-  res.cookie("jwt", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  res.redirect(`https://turjuman.online/`);
+  // No cookie, add token in redirect URL instead
+  res.redirect(`https://www.turjuman.online/auth/callback?token=${token}`);
 }
 
 router.get(
