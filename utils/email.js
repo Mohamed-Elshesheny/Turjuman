@@ -6,6 +6,9 @@ sgMail.setApiKey(process.env.SENDGRID_PASSWORD); // or SENDGRID_API_KEY if renam
 
 module.exports = class Email {
   constructor(email, name, url) {
+    if (!email) {
+      throw new Error("Recipient email is required!");
+    }
     this.to = email;
     this.firstName = name?.split(" ")[0] || "";
     this.url = url;
