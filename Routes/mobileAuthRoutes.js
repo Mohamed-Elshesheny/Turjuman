@@ -23,7 +23,7 @@ const androidClient = new OAuth2Client(process.env.GOOGLE_ANDROID_CLIENT_ID);
 
 /**
  * @swagger
- * /api/v1/mobile/google:
+ * /auth/mobile/google:
  *   post:
  *     summary: Google mobile login
  *     tags: [MobileAuth]
@@ -94,7 +94,7 @@ router.post("/google", async (req, res) => {
 
 /**
  * @swagger
- * /api/v1/mobile/facebook:
+ * /auth/mobile/facebook:
  *   post:
  *     summary: Facebook mobile login
  *     tags: [MobileAuth]
@@ -168,7 +168,7 @@ router.post("/facebook", async (req, res) => {
 
 /**
  * @swagger
- * /api/v1/mobile/logout/mobile:
+ * /auth/mobile/logout/mobile:
  *   post:
  *     summary: Logout user from mobile
  *     tags: [MobileAuth]
