@@ -96,7 +96,7 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-exports.logout = (req, res) => {
+exports.logout = async (req, res) => {
   res.clearCookie("jwt", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -111,7 +111,11 @@ exports.logout = (req, res) => {
       : req.cookies.jwt;
   if (token) {
     if (req.user?.jti) {
-      redis.set(req.user.jti, "revoked", "EX", 60 * 60 * 6);
+      try {
+        await redis.set(req.user.jti, "revoked", "EX", 60 * 60 * 6);
+      } catch (err) {
+        console.error("❌ Redis revoke failed:", err);
+      }
     } else {
       console.warn("JWT decode failed or jti is missing");
     }
@@ -150,7 +154,13 @@ exports.protect = catchAsync(async (req, res, next) => {
     console.warn("No jti found in decoded token");
   }
 
-  const isRevoked = decoded.jti ? await redis.get(decoded.jti) : null;
+  let isRevoked = null;
+  try {
+    isRevoked = decoded.jti ? await redis.get(decoded.jti) : null;
+  } catch (err) {
+    console.error("❌ Redis check failed:", err);
+    isRevoked = null;
+  }
 
   if (isRevoked) {
     return next(
