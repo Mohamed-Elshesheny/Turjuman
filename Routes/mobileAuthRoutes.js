@@ -68,11 +68,9 @@ router.post("/google", async (req, res) => {
         facebookId: { $exists: true },
       }))
     ) {
-      return res
-        .status(400)
-        .json({
-          message: "This email is already registered with Facebook login.",
-        });
+      return res.status(400).json({
+        message: "This email is already registered with Facebook login.",
+      });
     }
 
     if (!user) {
@@ -88,7 +86,9 @@ router.post("/google", async (req, res) => {
     issueToken(res, user);
   } catch (err) {
     console.error("Google mobile login error:", err);
-    res.status(500).json({ message: "Google login failed.", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Google login failed.", error: err.message });
   }
 });
 
@@ -140,11 +140,9 @@ router.post("/facebook", async (req, res) => {
       googleId: { $exists: true },
     });
     if (existingEmailUser) {
-      return res
-        .status(400)
-        .json({
-          message: "This email is already registered with Google login.",
-        });
+      return res.status(400).json({
+        message: "This email is already registered with Google login.",
+      });
     }
 
     let user = await User.findOne({ facebookId: data.id });
@@ -162,7 +160,9 @@ router.post("/facebook", async (req, res) => {
     issueToken(res, user);
   } catch (err) {
     console.error("Facebook mobile login error:", err);
-    res.status(500).json({ message: "Facebook login failed.", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Facebook login failed.", error: err.message });
   }
 });
 
@@ -176,6 +176,6 @@ router.post("/facebook", async (req, res) => {
  *       200:
  *         description: Successfully logged out.
  */
-router.post("/logout/mobile", authController.logout);
+router.post("/logout/mobile", authController.protect, authController.logout);
 
 module.exports = router;
