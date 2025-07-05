@@ -176,6 +176,7 @@ router.post("/facebook", async (req, res) => {
  *       200:
  *         description: Successfully logged out.
  */
-router.post("/logout/mobile", authController.protect, authController.logout);
+router.use(authController.protect);
+router.post("/logout/mobile", authController.logout);
 
 module.exports = router;

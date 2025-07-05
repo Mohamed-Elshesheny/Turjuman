@@ -105,12 +105,13 @@ exports.logout = (req, res) => {
     domain: ".turjuman.online",
   });
 
-  const token = req.cookies.jwt;
+  const token =
+    req.headers.authorization?.startsWith("Bearer")
+      ? req.headers.authorization.split(" ")[1]
+      : req.cookies.jwt;
   if (token) {
-    const decoded = jwt.decode(token);
-
-    if (decoded && decoded.jti) {
-      redis.set(decoded.jti, "revoked", "EX", 60 * 60 * 6);
+    if (req.user?.jti) {
+      redis.set(req.user.jti, "revoked", "EX", 60 * 60 * 6);
     } else {
       console.warn("JWT decode failed or jti is missing");
     }
@@ -180,6 +181,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // 6️⃣ Grant access
   req.user = currentUser;
+  req.user.jti = decoded.jti;
   next();
 });
 
